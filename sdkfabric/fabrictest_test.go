@@ -280,6 +280,9 @@ func TestAA12CommissionReadSubscribe(t *testing.T) {
 		t.Fatal("a PASE pair reports commissioned")
 	}
 	notCommissioned("after PASE")
+	if closed := dev.Node().Sessions().ClosePASESessions(); closed != 1 {
+		t.Fatalf("PASE probe sessions closed %d, want 1", closed)
+	}
 
 	pair, err := ctl.Commission(ctx, dev, fabrictest.CommissionOptions{})
 	if err != nil {
