@@ -63,7 +63,7 @@ semantics. These are evidence gaps, not new authorization checks.
 
 ## Inspected eBUS controller families: observations
 
-Owner for these rows: `helianthus-ebusgateway`, `semantic_vaillant.go` (driver
+Owner for these rows: `helianthus-gateway`, `semantic_vaillant.go` (driver
 source path reported by [the mapping][mapping], implementation not supplied),
 with native contract in `helianthus-docs-ebus`,
 `protocols/vaillant/ebus-vaillant-b524-register-map.md`. OP02 selectors below
@@ -93,7 +93,7 @@ use the characterized instance, never a universal index assumption.
 
 ## Remote sensor families and uninspected owner gaps
 
-For eBUS remote rows the source owner remains `helianthus-ebusgateway`; the
+For eBUS remote rows the source owner remains `helianthus-gateway`; the
 native catalog is the inspected source path. No current remote-to-SemReg
 publication implementation was supplied. OP06/GG09 and OP06/GG0A are distinct
 from identically numbered OP02 local groups; retain opcode, group, instance,
@@ -199,10 +199,10 @@ source paths; a moving branch link is not an immutable evidence pin. No network
 verification was performed. Native selectors and section names above narrow each
 claim within these files; line locators reflect the inspected source views.
 
-[parent]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8
-[lock]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json
-[baseline]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md
-[admission]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py#L166-L180
+[parent]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/8
+[lock]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json
+[baseline]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md
+[admission]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py#L166-L180
 [thermal]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go#L37-L82
 [mapping]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/architecture/b524-semantic-mapping.md
 [system-map]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/architecture/b524-semantic-mapping.md#L17-L41

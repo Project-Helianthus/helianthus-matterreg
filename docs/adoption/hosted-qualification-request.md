@@ -1,8 +1,8 @@
 # Owner-run hosted adoption qualification request
 
 This request implements the specification slice of
-[#79](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/79),
-a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/59).
+[#79](https://github.com/Project-Helianthus/helianthus-matterreg/issues/79),
+a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matterreg/issues/59).
 The umbrella stays open. Nothing here is stable before Helianthus 1.0.
 
 It specifies one finite job for the owner to run against one selected go-fabric

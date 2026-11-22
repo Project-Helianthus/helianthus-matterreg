@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/adoption"
+	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
 	bridgedinfodef "github.com/SukramJ/go-fabric/cluster/spec/bridgeddevicebasicinformation"
 	descriptordef "github.com/SukramJ/go-fabric/cluster/spec/descriptor"
 	epmdef "github.com/SukramJ/go-fabric/cluster/spec/electricalpowermeasurement"

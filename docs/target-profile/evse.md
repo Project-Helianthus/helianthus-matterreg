@@ -1,7 +1,7 @@
 # EVSE source coverage and Matter composition gaps
 
-This binding-local inventory advances [issue 13](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/13)
-as a partial source-side slice of [parent 8](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8).
+This binding-local inventory advances [issue 13](https://github.com/Project-Helianthus/helianthus-matterreg/issues/13)
+as a partial source-side slice of [parent 8](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8).
 It cannot close the parent or release M42/M43. It inventories Tesla Gen3 HSC
 family read acquisition and separately retained current-limit outcomes. It
 creates no protocol fact, semantic definition, target mapping, endpoint, or
@@ -97,7 +97,7 @@ live acquisition composition. Acknowledging a read never establishes actuation.
 All fields below are in `helianthus.pack.evse`, with definitions and metadata in
 [`semreg/v1/packs/evse/definitions.go`][S]. Pack definition versions are existing
 source metadata, not a Helianthus stability promise. **Q** denotes the existing
-Tesla Gen3 injected-record publication owned by helianthus-ebusgateway,
+Tesla Gen3 injected-record publication owned by helianthus-gateway,
 [`mcp/tesla_gen3_evse_semantic.go`][Q], specifically `batch`, `provisional`,
 `candidate`, and `teslaGen3EVSEPublicCurrentAt`. Q does not open an endpoint or
 execute a current-limit operation. Native requirements are [C][C]; no new setter
@@ -209,11 +209,11 @@ production profile, conformance, certification or interoperability is establishe
 Production admission remains denied. Native evidence and partial last-known-good
 state, eBUS MCP compatibility and GraphQL parity remain unchanged.
 
-[L]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json
-[B]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md
-[P]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py
+[L]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json
+[B]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md
+[P]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py
 [S]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/evse/definitions.go
 [D]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/tesla_gen3_read_acquisition.go
 [R]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/tesla/gen3-read-acquisition-v1.md
 [C]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/tesla/gen3-current-limit-operation-v1.md
-[Q]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/mcp/tesla_gen3_evse_semantic.go
+[Q]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/mcp/tesla_gen3_evse_semantic.go

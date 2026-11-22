@@ -1,7 +1,7 @@
 # go-fabric contribution and defect-tracking workflow
 
-This process advances [issue #67](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/67),
-a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/59).
+This process advances [issue #67](https://github.com/Project-Helianthus/helianthus-matterreg/issues/67),
+a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matterreg/issues/59).
 The umbrella remains open. Nothing here is stable before Helianthus 1.0.
 
 ## Consumption and contribution authority

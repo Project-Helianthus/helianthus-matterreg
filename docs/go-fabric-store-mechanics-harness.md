@@ -1,13 +1,13 @@
 # Isolated fabric-store mechanics
 
 Issue #44 implements the fabric-store portion of the proposed Z20 scenarios in
-[the runtime qualification contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/go-fabric-runtime-qualification.md).
+[the runtime qualification contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/go-fabric-runtime-qualification.md).
 It is a partial slice of #24 / Project #2; the parent remains open. Nothing here
 is stable before Helianthus 1.0.
 
 ## Scope and evidence
 
-The [harness](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/qualification/storeharness/harness.go)
+The [harness](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/qualification/storeharness/harness.go)
 uses an injected store and supplied opaque associations. `MemoryStore` is a
 synthetic in-memory fault fixture. Its independent `Unrelated` map represents
 shared opaque records; no store operation removes them. There is no storage
@@ -21,7 +21,7 @@ actual library callback lifetimes, durability, recovery guarantees and resource
 behavior. These labels do not upgrade native qualification, freshness, runtime
 readiness, physical acceptance, interoperability or Matter certification.
 
-The [Portal lifecycle contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
+The [Portal lifecycle contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
 continues to own the persistence design boundary. No protocol facts are added;
 those require their public native contract before semantic or target mapping.
 This fixture stores no native evidence and cannot modify or promote source

@@ -11,8 +11,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/adoption"
-	"github.com/Project-Helianthus/helianthus-matter-binding/sdkfabric"
+	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
+	"github.com/Project-Helianthus/helianthus-matterreg/sdkfabric"
 	"github.com/SukramJ/go-fabric/client/discovery"
 	"github.com/SukramJ/go-fabric/cluster/spec"
 	descriptordef "github.com/SukramJ/go-fabric/cluster/spec/descriptor"

@@ -1,8 +1,8 @@
 # Thermostat families and heating/cooling roles
 
-This is the bounded source inventory for [issue #42](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/42),
-a partial slice of [#8](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8)
-and [#23](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/23)
+This is the bounded source inventory for [issue #42](https://github.com/Project-Helianthus/helianthus-matterreg/issues/42),
+a partial slice of [#8](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8)
+and [#23](https://github.com/Project-Helianthus/helianthus-matterreg/issues/23)
 under Project #2. It separates thermostat-related observations and candidate
 operations; it does not choose a minimal endpoint or complete either parent.
 Nothing here is stable before Helianthus 1.0.
@@ -208,8 +208,8 @@ semantic mappings and mandatory closure still govern parent acceptance.
 
 - [N] [Public B524 register contract](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md): sections and native keys identified per row; “Table Legend” and “Open questions” qualify all candidate use.
 - [S] [Thermal definitions](https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go): `fields`, `services`, `capabilities`, `operations`; definitions establish semantic vocabulary, not native mappings.
-- [H] [Heating source inventory](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/heating.md): “Zones and remote-room observations”, “Circuits”, and “Public evidence locators”; driver references here were reviewed only through that supplied inventory.
-- [C] [Inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md): “Proposed reconciliation record”, “Mandatory-feature closure and shared facts”, and “Later two-way sweep and inventory checkpoint”.
+- [H] [Heating source inventory](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/heating.md): “Zones and remote-room observations”, “Circuits”, and “Public evidence locators”; driver references here were reviewed only through that supplied inventory.
+- [C] [Inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md): “Proposed reconciliation record”, “Mandatory-feature closure and shared facts”, and “Later two-way sweep and inventory checkpoint”.
 
 Public main links locate the reviewed supplied views; they are not immutable
 qualification evidence. Offline review checks repository/path and cited content,

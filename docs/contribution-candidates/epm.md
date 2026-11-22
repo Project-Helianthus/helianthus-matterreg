@@ -1,20 +1,20 @@
 # Internal Electrical Power Measurement contribution candidate
 
 This is an internal contribution candidate for the binding's own use and later
-review, advancing [issue #36](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/36)
-and partially advancing [parent #24](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24).
+review, advancing [issue #36](https://github.com/Project-Helianthus/helianthus-matterreg/issues/36)
+and partially advancing [parent #24](https://github.com/Project-Helianthus/helianthus-matterreg/issues/24).
 It is executable local arithmetic and envelope validation. It is never an
 upstream proposal, fork or patch submission, and asserts no go-fabric library
 support. Nothing here is stable before Helianthus 1.0.
 
 ## Source and claim boundary
 
-The supplied [metering inventory](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/metering.md)
+The supplied [metering inventory](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/metering.md)
 records source-side unit labels, signed power, phase versus aggregate scope,
 and gaps in Accuracy and composition evidence. Its proposed projection rules
 require retaining source evidence, zero versus unavailable and independent facts
 when another reading is rejected. The supplied
-[inventory contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md)
+[inventory contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md)
 requires public native documentation first, then accepted semantic evidence and
 the public semantic owner's target mapping. This validator supplies none of
 those acceptances. Moving public links locate files; no online verification or

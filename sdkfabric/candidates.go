@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/eem"
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/epm"
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/hvac"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/eem"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/epm"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/hvac"
 )
 
 // This file imports no SDK package: it links already encoded candidate DTOs to

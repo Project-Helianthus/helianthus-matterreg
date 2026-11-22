@@ -1,7 +1,7 @@
 # go-fabric pin transition dossier
 
-This specification advances [issue #80](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/80),
-a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/59).
+This specification advances [issue #80](https://github.com/Project-Helianthus/helianthus-matterreg/issues/80),
+a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matterreg/issues/59).
 The umbrella remains open. Nothing here is stable before Helianthus 1.0.
 
 ## Status and authority
@@ -212,7 +212,7 @@ job and does not keep a second job.
 | Owner change | Current consumer | What the change must handle |
 | --- | --- | --- |
 | `sdk/matter-sdk.lock.json` records the module pin | `tools/validate_lock.py` checks it against `go.mod` and the zip checksum in `go.sum` | The admission module is a separate comparison and is unchanged. |
-| Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.22.2` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matter-binding` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
+| Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.22.2` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matterreg` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
 | Migrate `runtime/production_readiness.py` | Imported by `tools/validate_lock.py`, `runtime/adoption_baseline.py` and both test modules below. `EXPECTED_LOCK` and its pinned constants, `validate_build_evidence`, `REQUIRED_BUILD_TARGETS` and `validate_composition` all assume a commit-pinned C++ SDK. | Follow the evaluator rules below. |
 | `tools/validate_lock.py` checks the module pin | `.github/workflows/sdk-baseline.yml` runs it. `validate_workflow_pins` is unchanged. | Checkout and mapping-file options are not part of the checker. |
 | `runtime/adoption_baseline.py` accepts only the pinned identity | `tests/test_adoption_baseline.py` calls the real evaluator | Provider, module, release tag, checksum and model must equal the lock. Another tag is rejected. |

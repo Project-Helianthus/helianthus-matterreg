@@ -280,12 +280,12 @@ PASS. Independent review, applicable hosted checks and remaining parent
 acceptance are separate; no commissioning, deployment or upstream action is
 authorized or performed.
 
-[issue]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/43
-[matrix]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/23
-[parent]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8
-[heating]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/heating.md
-[ac]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/air-conditioning.md
-[completeness]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md
+[issue]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/43
+[matrix]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/23
+[parent]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/8
+[heating]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/heating.md
+[ac]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/air-conditioning.md
+[completeness]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md
 [thermal]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go
 [native]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md
 [system]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md#gg0x00--system

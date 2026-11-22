@@ -1,6 +1,6 @@
 # Photovoltaic source coverage for the Matter binding
 
-This is a partial source-side inventory for [binding issue #12](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/12), advancing [parent #8](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8). It does not complete the locked Matter target inventory, release M42/M43, or close the parent. Nothing is stable before Helianthus 1.0. This document records current source behavior and proposed reconciliation questions; it creates no native facts, accepted mapping, runtime endpoint, composition profile, or qualification.
+This is a partial source-side inventory for [binding issue #12](https://github.com/Project-Helianthus/helianthus-matterreg/issues/12), advancing [parent #8](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8). It does not complete the locked Matter target inventory, release M42/M43, or close the parent. Nothing is stable before Helianthus 1.0. This document records current source behavior and proposed reconciliation questions; it creates no native facts, accepted mapping, runtime endpoint, composition profile, or qualification.
 
 Protocol facts remain owned by the public native documentation; SemReg owns the neutral definitions, the Gateway owns current publication, the public semantic documentation repository owns Matter target mappings, and this repository owns the SDK boundary and admission. This inventory does not amend those contracts. Application lifecycle belongs outside protocol/type trees. No authentication, principal, permission, or credential check is introduced; authentication/authorization remain 0.11 subjects, with no new authorization gate before 0.9.
 
@@ -134,20 +134,20 @@ state, eBUS MCP compatibility and GraphQL parity remain unchanged.
 
 All file links use public `blob/main` destinations. Line ranges locate the inspected source statements; main may move, so later acceptance must reconcile the reviewed sources with the adopted normative corpus.
 
-[lock]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json#L1-L38
-[baseline]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md#L69-L93
-[readiness]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py#L102-L181
+[lock]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json#L1-L38
+[baseline]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md#L69-L93
+[readiness]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py#L102-L181
 [core]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/sunspec/read-only-core-v1.md#L1-L104
 [fronius]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/fronius/qualification-readiness-v1.md#L44-L125
 [flavor]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/sunspec_fronius.go#L105-L187
 [capability]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/sunspec_capability.go#L89-L188
 [points]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/sunspec_models_inverter.go#L3-L70
 [pack]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/pv/definitions.go#L34-L57
-[publication]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L208-L323
-[conversion]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L380-L425
-[services]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L428-L447
-[lifecycle]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L599-L662
-[selection]: https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L893-L936
+[publication]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L208-L323
+[conversion]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L380-L425
+[services]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L428-L447
+[lifecycle]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L599-L662
+[selection]: https://github.com/Project-Helianthus/helianthus-gateway/blob/main/internal/modbusadapter/semreg_pv_publication_core.go#L893-L936
 [growatt]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/growatt/protocol-ii-readonly-v1.md#L22-L144
 [huawei]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/huawei/inverter-battery-readonly-v1.md
 [huawei-reg]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/profiles/vendor/huawei/sun2000-disposition.json#L24-L171

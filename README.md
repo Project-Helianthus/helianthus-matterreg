@@ -80,6 +80,6 @@ See [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 The Python semantic feed consumer is retired; this repository reads no gateway
 feed. The in-process Matter driver of the standalone gateway projects the shared
 semantic data directly
-([helianthus-ebusgateway#1492](https://github.com/Project-Helianthus/helianthus-ebusgateway/issues/1492)).
+([helianthus-gateway#1492](https://github.com/Project-Helianthus/helianthus-gateway/issues/1492)).
 No replacement reader is provided, and offers from the gateway cannot authorize
 allocation or commissioning here; readiness and allocation stay fail closed.

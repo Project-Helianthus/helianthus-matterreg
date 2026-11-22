@@ -1,8 +1,8 @@
 # Internal Thermostat and HVAC contribution candidate
 
 This is an **internal contribution candidate for the binding's own use and
-later review**, implementing [issue #39](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/39)
-as a partial slice of [parent #24](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24).
+later review**, implementing [issue #39](https://github.com/Project-Helianthus/helianthus-matterreg/issues/39)
+as a partial slice of [parent #24](https://github.com/Project-Helianthus/helianthus-matterreg/issues/24).
 It is never an upstream proposal, fork or patch submission. Executable vector
 validation does not establish go-fabric library support. Nothing is stable
 before Helianthus 1.0.
