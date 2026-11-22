@@ -9,9 +9,9 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/adoption"
-	"github.com/Project-Helianthus/helianthus-matter-binding/qualification/commissioning"
-	"github.com/Project-Helianthus/helianthus-matter-binding/qualification/reportharness"
+	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
+	"github.com/Project-Helianthus/helianthus-matterreg/qualification/commissioning"
+	"github.com/Project-Helianthus/helianthus-matterreg/qualification/reportharness"
 	"github.com/SukramJ/go-fabric/node"
 )
 

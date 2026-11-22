@@ -1,4 +1,4 @@
-module github.com/Project-Helianthus/helianthus-matter-binding
+module github.com/Project-Helianthus/helianthus-matterreg
 
 go 1.27.4
 

@@ -1,6 +1,6 @@
 # Storage source coverage for the Matter target inventory
 
-This binding-local inventory advances [issue #9](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/9) as a partial source-side slice of [parent #8](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8). It cannot close the parent or release M42/M43. Full adopted-corpus target verification remains open. Nothing here is stable before Helianthus 1.0.
+This binding-local inventory advances [issue #9](https://github.com/Project-Helianthus/helianthus-matterreg/issues/9) as a partial source-side slice of [parent #8](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8). It cannot close the parent or release M42/M43. Full adopted-corpus target verification remains open. Nothing here is stable before Helianthus 1.0.
 
 This document inventories existing public native evidence and candidate semantic correspondence. It creates no native fact, adapter, universal target mapping, runtime endpoint, profile admission, acquisition or command. Binding coverage belongs here; protocol-neutral contracts remain with SemReg, native contracts with their driver documentation, and accepted Matter mappings with the public semantic documentation owner. No authentication, principal or permission interface is introduced.
 
@@ -131,9 +131,9 @@ production profile, conformance, certification or interoperability is establishe
 Production admission remains denied. Native evidence and partial last-known-good
 state, eBUS MCP compatibility and GraphQL parity remain unchanged.
 
-[lock]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json
-[baseline]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md
-[readiness]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py
+[lock]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json
+[baseline]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md
+[readiness]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py
 [semreg]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/storage/definitions.go
 [typed]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/growatt_bms_rs485_typed.go
 [multi]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/growatt_bms_rs485_multigroup.go

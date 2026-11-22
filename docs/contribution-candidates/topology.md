@@ -1,18 +1,18 @@
 # Internal topology contribution candidate
 
 This is an **internal contribution candidate for the binding's own use and
-later review**, implementing a partial slice of [#38](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/38)
-and advancing [#24](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24).
+later review**, implementing a partial slice of [#38](https://github.com/Project-Helianthus/helianthus-matterreg/issues/38)
+and advancing [#24](https://github.com/Project-Helianthus/helianthus-matterreg/issues/24).
 The parent stays open. It is never an upstream proposal, fork or patch
 submission. Nothing here is stable before Helianthus 1.0. Executable validation
 does not establish that go-fabric supports Power Topology.
 
 ## Source basis and evidence boundaries
 
-The [metering inventory](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/metering.md)
+The [metering inventory](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/metering.md)
 separates source representations from physical topology: text dimensions,
 counters, units, names and shared addresses cannot establish wiring or endpoint
-associations. The [inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md)
+associations. The [inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md)
 requires native owner/profile and fact scope to remain distinct and missing
 evidence to block closure without erasing native or partial last-known-good
 state. These supplied contracts motivate the local rules below; they do not
@@ -39,7 +39,7 @@ enumerations or production admission rules are invented here.
 
 ## Local executable contract
 
-[Validate](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/candidates/topology/candidate.go)
+[Validate](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/candidates/topology/candidate.go)
 accepts a finite `Graph` value containing explicit `Sources`, `Nodes` and
 directed `Edges`. There is no discovery, provider interface, gateway integration,
 SDK call or dependency on another contribution-candidate ticket.
@@ -98,7 +98,7 @@ endpoints, or one endpoint to different phases, is invalid within that source.
 Equal labels in a separately declared source do not create a shared topology.
 All identifiers here are synthetic; no installed family capability is claimed.
 
-[Tests](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/candidates/topology/candidate_test.go)
+[Tests](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/candidates/topology/candidate_test.go)
 use independent expected graphs and reason codes. The following is the
 test-to-mutation mapping; an executed mutation campaign is reported separately
 and must not be inferred merely from this table.

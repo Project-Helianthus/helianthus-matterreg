@@ -15,7 +15,7 @@ does not turn the proposed rows below into executed adapter evidence.
 
 ## Authority and current evidence
 
-The current [readiness evaluator](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py)
+The current [readiness evaluator](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py)
 only evaluates evidence. It creates no node, endpoint or fabric. Its reviewed
 lock has no accepted runtime composition-profile digest, so all current calls
 deny allocation before caller profile or build metadata can permit it. Changing
@@ -23,7 +23,7 @@ caller metadata or producing passing harness results cannot change that decision
 A future reviewed profile must match the reviewed lock and mapping, provide
 mandatory composition evidence, and have matching required build results.
 
-The [SDK baseline](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md)
+The [SDK baseline](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md)
 describes a bounded upstream Electrical Sensor sample fixture. It does not
 qualify a Helianthus runtime or go-fabric. Optional ActiveCurrent alone cannot
 supply the required Descriptor, Power Topology and Electrical Power Measurement
@@ -33,7 +33,7 @@ This scenario contract neither supplies those facts nor substitutes a library's
 sample target for them. These are baseline constraints, not an exhaustive review
 of the locked data-model tree.
 
-The [Portal endpoint lifecycle contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
+The [Portal endpoint lifecycle contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
 owns selection persistence and the proposed durable opaque endpoint association.
 It requires preservation of native evidence and partial last-known-good state
 when publication is withheld. This harness consumes supplied intent and ledger
@@ -41,7 +41,7 @@ snapshots; it does not choose selections, persist Portal state, define migration
 or implement M42/M43. Its mock ledger is an observation aid, not a replacement
 persistence design.
 
-The [inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md)
+The [inventory completeness contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md)
 keeps source confidence, native qualification, target closure, profile acceptance,
 build evidence and admission separate. Protocol facts require the public native
 contract first, then accepted semantic evidence and the public target mapping.

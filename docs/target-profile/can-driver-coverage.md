@@ -206,7 +206,7 @@ values remain intact and distinct from freshness/qualification; no eBUS MCP or
 GraphQL behavior changes. Full committed-change review/CI, go-fabric build
 qualification and physical acceptance remain unverified.
 
-[issue]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8
+[issue]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/8
 [I]: inventory-completeness.md
 [L]: ../../sdk/matter-sdk.lock.json
 [V]: https://github.com/Project-Helianthus/helianthus-docs-canbus/blob/main/protocols/growatt/low-voltage-bms-can-v104.md

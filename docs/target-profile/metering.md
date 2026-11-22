@@ -1,7 +1,7 @@
 # Electrical metering rows by catalog element and composition gaps
 
 This is a partial, binding-local source-side inventory for issue #14, advancing
-matter-binding#8. Metering is not a pack: its rows are keyed by the catalog
+matterreg#8. Metering is not a pack: its rows are keyed by the catalog
 element they would populate, all in `helianthus.pack.infrastructure`, and sit
 under that element's planes. It cannot close that parent or release M42/M43. It proposes
 coverage review, not a protocol-neutral contract or an accepted Matter mapping.
@@ -15,9 +15,9 @@ The reviewed public source locators are:
 - [S: infrastructure definitions](https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/infrastructure/definitions.go): `fields`, `dimensions`, `services`, `capabilities`, `index`, `Metadata`.
 - [M: SunSpec meter definitions](https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/sunspec_models_meter.go): `integerMeterSunSpecPoints`, `floatMeterSunSpecPoints`, `meterMandatoryPoints`, `meterFieldID`, `meterEventSymbols`.
 - [E: eeBUS raw typed values](https://github.com/Project-Helianthus/helianthus-eebusreg/blob/main/eebusraw/typed_value_v1.go): `NewTypedValueV1`, `DecodeTypedValueV1`, `canonicalTypedValueV1WithDepth`, `Value`, `Clone`, `ComputeHash`.
-- [L: reviewed SDK lock](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json): `sdk.data_model`, `sdk.blobs`, `target`, `accepted_runtime_composition_profile_sha256`.
-- [B: baseline and readiness description](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md): “Production gate” and “Hosted reproduction”.
-- [R: admission implementation](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py): `validate_composition`, `evaluate`.
+- [L: reviewed SDK lock](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json): `sdk.data_model`, `sdk.blobs`, `target`, `accepted_runtime_composition_profile_sha256`.
+- [B: baseline and readiness description](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md): “Production gate” and “Hosted reproduction”.
+- [R: admission implementation](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py): `validate_composition`, `evaluate`.
 
 These main-branch links locate public files; they are not immutable evidence or
 proof that a remote page was checked online. Source claims below were reviewed

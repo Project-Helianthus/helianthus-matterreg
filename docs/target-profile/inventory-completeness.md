@@ -19,7 +19,7 @@ Public main/tag links locate sources, not immutable evidence. The complete
 retained normative model corpus and compatible accepted semantic target evidence
 are still missing; reported source identities below do not replace either.
 
-The [SDK baseline](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md)
+The [SDK baseline](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md)
 records a bounded Electrical Sensor fixture and the current mapping limitation:
 `evse.ac.current` alone does not supply the mandatory target composition.
 A sample controller success does not prove native facts, full inventory coverage,
@@ -181,7 +181,7 @@ runtime result. Identifiers describe synthetic families and facts only.
 | Absent driver source: `(no element selected, no plane, native-to-Matter observation, unresolved target component)`; provenance unresolved-native/synthetic-family, unresolved fact | Register the driver group as awaiting inspection. Assume driver source and its public native fact contract are unavailable; no capability is invented. | Block the source sweep entry and join. This placeholder is not a counted representable fact, a negative representability proof, or a completed driver assessment. Reconcile its element and planes only after the source is inspected. |
 
 The EVSE mandatory list above is supported by the baseline and
-[readiness evaluator](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py).
+[readiness evaluator](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py).
 The full adopted normative data-model inspection is still required to establish exhaustive
 closure. The shared-reading and Thermal cases apply proposed identity and
 evidence rules; the metadata registry alone cannot prove their native facts.
@@ -271,7 +271,7 @@ review does not change the lock, accept a profile, fabricate build results, or
 invoke the evaluator. Future profile acceptance and matching build evidence
 remain separate work under the existing readiness contract.
 
-The [Portal endpoint lifecycle contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
+The [Portal endpoint lifecycle contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/PORTAL_ENDPOINT_LIFECYCLE.md)
 keeps selection intent separate from allocation and preserves native evidence
 and partial last-known-good state when publication is withheld. Its proposed
 lifecycle states and identity design remain unchanged. M41 persistence and

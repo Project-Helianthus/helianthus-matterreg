@@ -10,10 +10,10 @@ contract, not an implemented report parser or runtime interface.
 
 ## Current authority and explicit unknowns
 
-The [binding ownership rules](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/AGENTS.md)
+The [binding ownership rules](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/AGENTS.md)
 place SDK selection, allocation and integration at this boundary. The
-[reviewed lock](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json)
-and [SDK baseline](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md)
+[reviewed lock](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json)
+and [SDK baseline](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md)
 still describe the existing connectedhomeip implementation and bounded sample
 fixture. They have not been retargeted by this documentation slice and do not
 supply go-fabric build evidence. The owner decision in #59 supersedes their SDK

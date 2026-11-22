@@ -6,8 +6,8 @@ selects an SDK nor acquires upstream material. Nothing here is stable before
 Helianthus 1.0. No current upstream release or delivered API is asserted.
 
 The local [record validator](../qualification/tagtriage/record.go) owns only
-structural validation. The [build qualification contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/go-fabric-build-qualification.md)
-and [runtime qualification contract](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/go-fabric-runtime-qualification.md)
+structural validation. The [build qualification contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/go-fabric-build-qualification.md)
+and [runtime qualification contract](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/go-fabric-runtime-qualification.md)
 remain separate requirements. Links locate public main documents; they are not
 immutable evidence or a claim that remote links were fetched.
 

@@ -1,8 +1,8 @@
 # Pump-family source inventory and target gaps
 
-This bounded source inventory addresses [issue #41](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/41)
-and advances [#8](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8)
-and [#23](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/23)
+This bounded source inventory addresses [issue #41](https://github.com/Project-Helianthus/helianthus-matterreg/issues/41)
+and advances [#8](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8)
+and [#23](https://github.com/Project-Helianthus/helianthus-matterreg/issues/23)
 as a partial contract slice. It distinguishes controller circuit pumps,
 controller solar pumps and direct boiler pump provenance. It completes only
 this named source inventory slice, not target closure or either parent.
@@ -188,8 +188,8 @@ by [H] remain follow-up evidence, not inspected authority here.
 
 - [N] [B524 register catalog](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md): Table Legend, Group Topology, current bounds, Circuits, Solar Circuit and Circuit State Enum.
 - [S] [Thermal definitions](https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go): `fields`, `dimensions`, `services`, `capabilities`, `operations`.
-- [H] [Heating source inventory](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/heating.md): Circuits, DHW, direct boiler boundaries and commands, Manual contract cases and transition review.
-- [I] [Inventory completeness](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md): Proposed reconciliation record, Mandatory-feature closure and shared facts, Later two-way sweep and inventory checkpoint.
+- [H] [Heating source inventory](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/heating.md): Circuits, DHW, direct boiler boundaries and commands, Manual contract cases and transition review.
+- [I] [Inventory completeness](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md): Proposed reconciliation record, Mandatory-feature closure and shared facts, Later two-way sweep and inventory checkpoint.
 
 Acceptance for this slice is manual per-row source, meaning, identity, unit,
 loss, example and public-link review. It is not a prose-token test, native
@@ -202,5 +202,5 @@ is performed or authorized by this inventory.
 
 [N]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md
 [S]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go
-[H]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/heating.md
-[I]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md
+[H]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/heating.md
+[I]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md

@@ -86,14 +86,14 @@ func TestAA12StaticBoundary(t *testing.T) {
 	}
 	allowed := map[string]bool{
 		"context": true, "errors": true, "fmt": true, "strings": true, "sync": true, "time": true,
-		"github.com/Project-Helianthus/helianthus-matter-binding/adoption": true,
-		fabricModule + "cluster/spec/bridgeddevicebasicinformation":        true,
-		fabricModule + "cluster/spec/descriptor":                           true,
-		fabricModule + "cluster/spec/electricalpowermeasurement":           true,
-		fabricModule + "cluster/spec/powertopology":                        true,
-		fabricModule + "device":                                            true,
-		fabricModule + "mdns":                                              true,
-		fabricModule + "node":                                              true,
+		"github.com/Project-Helianthus/helianthus-matterreg/adoption": true,
+		fabricModule + "cluster/spec/bridgeddevicebasicinformation":   true,
+		fabricModule + "cluster/spec/descriptor":                      true,
+		fabricModule + "cluster/spec/electricalpowermeasurement":      true,
+		fabricModule + "cluster/spec/powertopology":                   true,
+		fabricModule + "device":                                       true,
+		fabricModule + "mdns":                                         true,
+		fabricModule + "node":                                         true,
 	}
 	for _, path := range imports(t, f) {
 		if !allowed[path] {

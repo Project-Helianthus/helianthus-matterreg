@@ -10,9 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/eem"
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/epm"
-	"github.com/Project-Helianthus/helianthus-matter-binding/candidates/hvac"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/eem"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/epm"
+	"github.com/Project-Helianthus/helianthus-matterreg/candidates/hvac"
 )
 
 // The candidate linkage tests use only this package's stager and the merged
@@ -342,9 +342,9 @@ func TestAA30CandidateStaticBoundary(t *testing.T) {
 	}
 	allowed := map[string]bool{
 		"errors": true, "fmt": true,
-		"github.com/Project-Helianthus/helianthus-matter-binding/candidates/eem":  true,
-		"github.com/Project-Helianthus/helianthus-matter-binding/candidates/epm":  true,
-		"github.com/Project-Helianthus/helianthus-matter-binding/candidates/hvac": true,
+		"github.com/Project-Helianthus/helianthus-matterreg/candidates/eem":  true,
+		"github.com/Project-Helianthus/helianthus-matterreg/candidates/epm":  true,
+		"github.com/Project-Helianthus/helianthus-matterreg/candidates/hvac": true,
 	}
 	for _, spec := range f.Imports {
 		path, err := strconv.Unquote(spec.Path.Value)

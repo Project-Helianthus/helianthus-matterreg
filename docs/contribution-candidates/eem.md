@@ -159,9 +159,9 @@ zero. Keep native bytes, loss and partial last-known-good state unchanged even
 when encoding is withheld. A valid vector is not an SDK report receipt, durable
 store result or runtime qualification. Those boundaries remain unverified.
 
-[issue]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/37
-[parent]: https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24
-[pv]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/photovoltaic.md
-[inventory]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/target-profile/inventory-completeness.md
+[issue]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/37
+[parent]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/24
+[pv]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/photovoltaic.md
+[inventory]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/inventory-completeness.md
 [native]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/sunspec/read-only-core-v1.md
-[readiness]: https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py
+[readiness]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py

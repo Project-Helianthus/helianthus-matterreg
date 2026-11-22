@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Project-Helianthus/helianthus-matter-binding/adoption"
-	"github.com/Project-Helianthus/helianthus-matter-binding/qualification/commissioning"
-	"github.com/Project-Helianthus/helianthus-matter-binding/qualification/reportharness"
-	"github.com/Project-Helianthus/helianthus-matter-binding/sdkfabric"
+	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
+	"github.com/Project-Helianthus/helianthus-matterreg/qualification/commissioning"
+	"github.com/Project-Helianthus/helianthus-matterreg/qualification/reportharness"
+	"github.com/Project-Helianthus/helianthus-matterreg/sdkfabric"
 	"github.com/SukramJ/go-fabric/client/discovery"
 	epmdef "github.com/SukramJ/go-fabric/cluster/spec/electricalpowermeasurement"
 	"github.com/SukramJ/go-fabric/controller/client"
@@ -724,9 +724,9 @@ func TestAA30MechanicsStaticBoundary(t *testing.T) {
 	}
 	allowed := []string{
 		"context", "errors", "fmt", "strconv", "sync",
-		"github.com/Project-Helianthus/helianthus-matter-binding/adoption",
-		"github.com/Project-Helianthus/helianthus-matter-binding/qualification/commissioning",
-		"github.com/Project-Helianthus/helianthus-matter-binding/qualification/reportharness",
+		"github.com/Project-Helianthus/helianthus-matterreg/adoption",
+		"github.com/Project-Helianthus/helianthus-matterreg/qualification/commissioning",
+		"github.com/Project-Helianthus/helianthus-matterreg/qualification/reportharness",
 		fabricModule + "node",
 	}
 	for _, path := range imports(t, f) {

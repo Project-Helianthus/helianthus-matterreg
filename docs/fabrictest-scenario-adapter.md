@@ -1,10 +1,10 @@
 # Offline commissioning scenario adapter proposal
 
-[Issue #34](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/34)
+[Issue #34](https://github.com/Project-Helianthus/helianthus-matterreg/issues/34)
 implements a partial commissioning/restart slice of Z20 for
-[issue #24](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24).
+[issue #24](https://github.com/Project-Helianthus/helianthus-matterreg/issues/24).
 Nothing here is stable before Helianthus 1.0. The standard-library
-[runner](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/qualification/commissioning/scenarios.go)
+[runner](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/qualification/commissioning/scenarios.go)
 uses local proposed port signatures named PASE, OpenWindow, Discover and Restart.
 These names are capability labels supplied by the task, not verified upstream
 fabrictest APIs. No upstream library is imported or qualified.
@@ -111,7 +111,7 @@ with the separate actual-evaluator denial control before adapter qualification.
 
 ## Evidence and remaining acceptance
 
-The [tests](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/qualification/commissioning/scenarios_test.go)
+The [tests](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/qualification/commissioning/scenarios_test.go)
 assert literal expected state transitions, ordered dispatch, rejection without
 extra dispatch, discovery ambiguity, explicit closure, detached store retention,
 restart after quiescence and permanent deadline failure. Callback tests vary
@@ -130,7 +130,7 @@ not upgrade native qualification, freshness, runtime, physical acceptance,
 interoperability or certification. Run only the focused offline check for this
 slice: `GO111MODULE=off go test ./qualification/commissioning -count=1`.
 
-[A33 reporting mechanics](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/go-fabric-report-mechanics-harness.md)
+[A33 reporting mechanics](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/go-fabric-report-mechanics-harness.md)
 remain separate and unchanged. This slice introduces no protocol mappings, no
 common production Provider interface, Gateway operation, authorization gate,
 public envelope, eBUS MCP or GraphQL change. It changes neither G5 D1-D5/O8 nor

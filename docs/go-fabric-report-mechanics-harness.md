@@ -1,7 +1,7 @@
 # Isolated logical-step report mechanics
 
-This implements only Z20 for [issue #30](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/30),
-a partial slice of [#24](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/24)
+This implements only Z20 for [issue #30](https://github.com/Project-Helianthus/helianthus-matterreg/issues/30),
+a partial slice of [#24](https://github.com/Project-Helianthus/helianthus-matterreg/issues/24)
 and Project #2. The [runtime qualification contract](go-fabric-runtime-qualification.md)
 defines the broader scenarios. Nothing here is stable before Helianthus 1.0.
 

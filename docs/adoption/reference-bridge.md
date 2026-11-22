@@ -1,7 +1,7 @@
 # One-sensor reference bridge and adapter contract
 
-This is the documentation companion for [#62](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/62),
-a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/59).
+This is the documentation companion for [#62](https://github.com/Project-Helianthus/helianthus-matterreg/issues/62),
+a partial child of [#59](https://github.com/Project-Helianthus/helianthus-matterreg/issues/59).
 It specifies the reference that later candidate factories must follow; it does
 not report an implemented bridge. No code PR is a dependency of this document.
 Nothing here is stable before Helianthus 1.0.

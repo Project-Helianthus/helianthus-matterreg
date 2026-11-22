@@ -1,8 +1,8 @@
 # Heating source coverage and composition gaps
 
 This operator-directed inventory is a **partial source-side contract slice** for
-[eBUS heating coverage](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/11).
-It advances [the Matter binding parent](https://github.com/Project-Helianthus/helianthus-matter-binding/issues/8)
+[eBUS heating coverage](https://github.com/Project-Helianthus/helianthus-matterreg/issues/11).
+It advances [the Matter binding parent](https://github.com/Project-Helianthus/helianthus-matterreg/issues/8)
 without closing it or releasing M42/M43. It inventories system, zone, circuit
 and domestic hot water (DHW) facts at the binding boundary. It creates no native
 facts, semantic definitions, target mappings, runtime endpoint or admission path.
@@ -226,9 +226,9 @@ not immutable qualification artifacts. This inventory was reviewed offline
 against supplied source views; link checks establish matching repository/path
 and cited content locally, not current network reachability or main freshness.
 
-- [L] [Binding SDK lock](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/sdk/matter-sdk.lock.json): `sdk.data_model`, `target`, accepted profile pin and mapping owner.
-- [D] [SDK baseline](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/docs/SDK_BASELINE.md): existing electrical fixture and readiness boundary.
-- [R] [Production readiness](https://github.com/Project-Helianthus/helianthus-matter-binding/blob/main/runtime/production_readiness.py): `evaluate`, `validate_composition`.
+- [L] [Binding SDK lock](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json): `sdk.data_model`, `target`, accepted profile pin and mapping owner.
+- [D] [SDK baseline](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md): existing electrical fixture and readiness boundary.
+- [R] [Production readiness](https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py): `evaluate`, `validate_composition`.
 - [S] [SemReg thermal definitions](https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go): `fields`, `services`, `capabilities`, `operations`.
 - [N] [B524 register catalog](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md): system, native DHW, circuits, zones and family-specific evidence.
 - [P] [B524 wire contract](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524.md): complete selectors, read-response correlation and inference limits on FLAGS.
@@ -236,7 +236,7 @@ and cited content locally, not current network reachability or main freshness.
 - [M] [B524 semantic correspondence](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/architecture/b524-semantic-mapping.md): source/public-surface correspondence and explicit non-claims.
 - [F] [Typed thermal mapping](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/architecture/fixtures/vaillant-semreg-thermal-map-v1.json): exact candidates, withholding, lifecycle and qualification.
 - [Q] [Controller qualification gap](https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/architecture/fixtures/vaillant-controller-qualification-v1.json): evidence status, permitted use and transition contract.
-- [G] [Current gateway driver](https://github.com/Project-Helianthus/helianthus-ebusgateway/blob/main/cmd/gateway/semantic_vaillant.go): functions named in each matrix row; code proves implementation shape, not native qualification.
+- [G] [Current gateway driver](https://github.com/Project-Helianthus/helianthus-gateway/blob/main/cmd/gateway/semantic_vaillant.go): functions named in each matrix row; code proves implementation shape, not native qualification.
 
 Remaining parent acceptance includes full adopted target inventory, reconciled
 mandatory composition and public target mappings, qualified native/service
