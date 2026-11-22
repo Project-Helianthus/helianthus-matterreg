@@ -17,13 +17,13 @@ import (
 	"time"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
-	bridgedinfodef "github.com/SukramJ/go-fabric/cluster/spec/bridgeddevicebasicinformation"
-	descriptordef "github.com/SukramJ/go-fabric/cluster/spec/descriptor"
-	epmdef "github.com/SukramJ/go-fabric/cluster/spec/electricalpowermeasurement"
-	ptdef "github.com/SukramJ/go-fabric/cluster/spec/powertopology"
-	"github.com/SukramJ/go-fabric/device"
-	"github.com/SukramJ/go-fabric/mdns"
-	"github.com/SukramJ/go-fabric/node"
+	bridgedinfodef "thingfabric.dev/go-fabric/cluster/spec/bridgeddevicebasicinformation"
+	descriptordef "thingfabric.dev/go-fabric/cluster/spec/descriptor"
+	epmdef "thingfabric.dev/go-fabric/cluster/spec/electricalpowermeasurement"
+	ptdef "thingfabric.dev/go-fabric/cluster/spec/powertopology"
+	"thingfabric.dev/go-fabric/device"
+	"thingfabric.dev/go-fabric/mdns"
+	"thingfabric.dev/go-fabric/node"
 )
 
 const (

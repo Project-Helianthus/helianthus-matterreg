@@ -65,7 +65,7 @@ class WorkflowPinTest(unittest.TestCase):
         sdk = json.loads(lock_text)["sdk"]
         module, tag = direct_requirement()
         self.assertEqual(sdk.get("module"), module)
-        self.assertNotEqual(module, module.casefold())
+        self.assertEqual(module, "thingfabric.dev/go-fabric")
         self.assertEqual(sdk.get("release_tag"), tag)
         self.assertEqual(sdk.get("checksum"), zip_checksum(module, tag))
         workflow = (ROOT / ".github/workflows/sdk-baseline.yml").read_text(encoding="utf-8")

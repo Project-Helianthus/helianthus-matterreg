@@ -13,7 +13,7 @@ Helianthus Electrical Sensor endpoint can be enabled by this repository today.
 
 ## Adopted baseline
 
-Helianthus adopts [go-fabric](https://github.com/SukramJ/go-fabric), an
+Helianthus adopts [go-fabric](https://github.com/thingfabric/go-fabric), an
 Apache-2.0 pure-Go semantic port of matter.js, on its **Matter 1.6.1** data
 model. SDK selection is an owner decision, not qualification or certification.
 The full inventory includes storage, thermal/HVAC, PV, EVSE, metering,
@@ -37,7 +37,7 @@ before Helianthus 1.0.
 
 Evidence class: **Unknown**. Status: **candidate**. Provenance is not published.
 
-> Upstream engagement **only if the upstream maintainer invites it** after seeing the fork and its reasons: then register Helianthus as the second consumer (reinstates the suspended deprecation window) and offer the fork PRs upstream under the CLA, each with the Board's OK. Until then no contact, no upstream issue or PR.
+> The current go-fabric dependency is the upstream v0.25.0 release. Helianthus has no go-fabric fork. Upstream contributions remain subject to the contributor agreement and an explicit Board decision.
 
 The existing [contribution workflow](docs/adoption/upstream-contribution-workflow.md)
 describes SDK consumption, local investigation and contributor rights separately;

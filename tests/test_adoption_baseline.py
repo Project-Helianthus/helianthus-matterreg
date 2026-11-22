@@ -106,7 +106,7 @@ class AdoptionBaselineTest(unittest.TestCase):
         self.assertEqual(result.errors, ())
         self.assertEqual(result.retained_inputs, ("synthetic/source-record", "synthetic/build-record"))
         self.assertEqual(result.proposal.provider, "go-fabric")
-        self.assertEqual(result.proposal.module, "github.com/SukramJ/go-fabric")
+        self.assertEqual(result.proposal.module, "thingfabric.dev/go-fabric")
         self.assertEqual(result.proposal.release_tag, item["release_tag"])
         self.assertEqual(result.proposal.checksum, item["checksum"])
         self.assertEqual(result.proposal.model, ("Matter", "1.6.1"))
@@ -200,7 +200,7 @@ class AdoptionBaselineTest(unittest.TestCase):
             item["checksum"] = checksum(value)
             self.assertFalse(baseline.evaluate_adoption_baseline(item, evidence(item)).proposal_valid)
         item = proposal()
-        item["module"] = module.casefold()
+        item["module"] = "Thingfabric.dev/go-fabric"
         self.assertFalse(baseline.evaluate_adoption_baseline(item, evidence(item)).proposal_valid)
         item = proposal()
         item["checksum"] = sum_checksum(module, tag, go_mod=True)
@@ -308,7 +308,7 @@ class AdoptionBaselineTest(unittest.TestCase):
         module, tag = direct_requirement()
         self.assertEqual(sdk.get("provider"), "go-fabric")
         self.assertEqual(sdk.get("module"), module)
-        self.assertNotEqual(sdk.get("module"), module.casefold())
+        self.assertEqual(sdk.get("module"), "thingfabric.dev/go-fabric")
         self.assertFalse(str(sdk.get("module", "")).startswith(module + "/"))
         self.assertEqual(sdk.get("release_tag"), tag)
         self.assertNotEqual(sdk.get("release_tag"), ".".join(tag.removeprefix("v").split(".")[:2]))
@@ -352,7 +352,7 @@ class AdoptionBaselineTest(unittest.TestCase):
                     elif name.startswith("skip pinned") or name == "casefold pinned fields":
                         field = "module" if name == "casefold pinned fields" else name.removeprefix("skip pinned ")
                         item = proposal()
-                        item[field] = item["module"].casefold() if field == "module" and name.startswith("casefold") else CHANGED[field]
+                        item[field] = "Thingfabric.dev/go-fabric" if field == "module" and name.startswith("casefold") else CHANGED[field]
                         with self.assertRaises(AssertionError):
                             self.assertFalse(evaluate(item, evidence(item)).proposal_valid)
                     else:
@@ -390,7 +390,7 @@ class ModulePinTest(unittest.TestCase):
         digest = hashlib.sha256(b"synthetic profile").hexdigest()
         samples = {
             "provider": with_value(self.lock, ("sdk", "provider"), "other-provider"),
-            "module case": with_value(self.lock, ("sdk", "module"), self.module.casefold()),
+            "module case": with_value(self.lock, ("sdk", "module"), "Thingfabric.dev/go-fabric"),
             "module prefix": with_value(self.lock, ("sdk", "module"), self.module + "/extra"),
             "release_tag patch": with_value(self.lock, ("sdk", "release_tag"), shifted_tag(self.tag)),
             "release_tag range": with_value(self.lock, ("sdk", "release_tag"), ">=" + self.tag),
@@ -472,7 +472,7 @@ class ModulePinTest(unittest.TestCase):
         }
         samples = {
             "skip provider": with_value(self.lock, ("sdk", "provider"), "other-provider"),
-            "casefold module": with_value(self.lock, ("sdk", "module"), self.module.casefold()),
+            "casefold module": with_value(self.lock, ("sdk", "module"), "Thingfabric.dev/go-fabric"),
             "prefix module": with_value(self.lock, ("sdk", "module"), self.module + "/extra"),
             "major minor tag": with_value(self.lock, ("sdk", "release_tag"), shifted_tag(self.tag)),
             "skip model": with_value(self.lock, ("sdk", "model", "version"), "1.7"),

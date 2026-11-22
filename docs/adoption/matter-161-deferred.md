@@ -1,8 +1,8 @@
 # Matter 1.6.1 adoption: deferrals and snapshot gaps
 
-Helianthus has adopted [go-fabric](https://github.com/SukramJ/go-fabric) and its
+Helianthus has adopted [go-fabric](https://github.com/thingfabric/go-fabric) and its
 Matter 1.6.1 data model. The checked-in [lock](../../sdk/matter-sdk.lock.json)
-pins that module: path `github.com/SukramJ/go-fabric`, release tag `v0.22.2`,
+pins that module: path `thingfabric.dev/go-fabric`, release tag `v0.25.0`,
 and the module zip checksum recorded by the module files. The
 [hosted job](../../.github/workflows/sdk-baseline.yml) runs the Go adapter for
 that pin. Matter 1.7-only elements below stay deferred. This ledger does not
@@ -16,7 +16,7 @@ candidate correspondence; **Unknown** marks uninspected or missing evidence.
 These grades never imply qualification, conformance, certification, ecosystem
 interoperability, Linux arm64 execution, Pi performance or latency.
 
-Public [go-fabric source](https://github.com/SukramJ/go-fabric/tree/main)
+Public [go-fabric source](https://github.com/thingfabric/go-fabric/tree/main)
 is a locator only. No online verification or complete retained normative corpus
 was supplied. The [baseline](../SDK_BASELINE.md) records the bounded source
 identities; the [full-family inventory](../target-profile/inventory-completeness.md)

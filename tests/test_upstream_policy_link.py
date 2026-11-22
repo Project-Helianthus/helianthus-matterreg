@@ -10,12 +10,9 @@ class UpstreamEngagementTest(unittest.TestCase):
     def test_board_decision_and_workflow_link(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         decision = (
-            "Upstream engagement **only if the upstream maintainer invites it** "
-            "after seeing the "
-            "fork and its reasons: then register Helianthus "
-            "as the second consumer (reinstates the suspended deprecation window) "
-            "and offer the fork PRs upstream under the CLA, each with the Board's "
-            "OK. Until then no contact, no upstream issue or PR."
+            "The current go-fabric dependency is the upstream v0.25.0 release. "
+            "Helianthus has no go-fabric fork. Upstream contributions remain subject "
+            "to the contributor agreement and an explicit Board decision."
         )
         self.assertIn(decision, readme)
         section = readme.split("## Upstream engagement\n", 1)[1].split("\n## ", 1)[0]

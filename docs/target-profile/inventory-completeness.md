@@ -9,7 +9,7 @@ No inventory checkpoint is released by this document.
 
 ## Current authority and limits
 
-Helianthus adopts [go-fabric](https://github.com/SukramJ/go-fabric) and its
+Helianthus adopts [go-fabric](https://github.com/thingfabric/go-fabric) and its
 Matter **1.6.1** data model. The [reviewed lock](../../sdk/matter-sdk.lock.json),
 validator and hosted job still select the legacy connectedhomeip fork's Matter
 1.7 target; owner-controlled replacement remains outstanding. The legacy lock

@@ -8,7 +8,7 @@ Nothing here is stable before Helianthus 1.0.
 
 ## Direction, authority and evidence
 
-Helianthus adopts [go-fabric](https://github.com/SukramJ/go-fabric) as its Matter
+Helianthus adopts [go-fabric](https://github.com/thingfabric/go-fabric) as its Matter
 SDK direction, using its Matter 1.6.1 data model. The selection does not qualify
 an adapter or any target. Matter 1.7-only elements are deferred within the
 pre-1.0 cycle. The checked-in [lock](../../sdk/matter-sdk.lock.json) and
