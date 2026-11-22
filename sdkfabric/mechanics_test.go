@@ -5,6 +5,7 @@ package sdkfabric_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
 	"sync"
 	"testing"
@@ -87,8 +88,13 @@ func (r *aa30Run) initiator() *aa30Initiator {
 	ctl, dev := r.site.AddController(fabrictest.ControllerOptions{}), r.dev
 	return &aa30Initiator{
 		pase: func(ctx context.Context) error {
-			_, err := ctl.PASE(ctx, dev)
-			return err
+			if _, err := ctl.PASE(ctx, dev); err != nil {
+				return err
+			}
+			if closed := dev.Node().Sessions().ClosePASESessions(); closed != 1 {
+				return fmt.Errorf("PASE probe sessions closed %d, want 1", closed)
+			}
+			return nil
 		},
 		discover: func(ctx context.Context) (int, error) {
 			found, err := ctl.Discover(ctx, discovery.ByLongDiscriminator(dev.Discriminator()), time.Minute)
