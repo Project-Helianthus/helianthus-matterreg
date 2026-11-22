@@ -13,15 +13,15 @@ import (
 
 	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
 	"github.com/Project-Helianthus/helianthus-matterreg/sdkfabric"
-	"github.com/SukramJ/go-fabric/client/discovery"
-	"github.com/SukramJ/go-fabric/cluster/spec"
-	descriptordef "github.com/SukramJ/go-fabric/cluster/spec/descriptor"
-	epmdef "github.com/SukramJ/go-fabric/cluster/spec/electricalpowermeasurement"
-	ptdef "github.com/SukramJ/go-fabric/cluster/spec/powertopology"
-	"github.com/SukramJ/go-fabric/controller/client"
-	"github.com/SukramJ/go-fabric/fabrictest"
-	"github.com/SukramJ/go-fabric/mdns"
-	"github.com/SukramJ/go-fabric/node"
+	"thingfabric.dev/go-fabric/client/discovery"
+	"thingfabric.dev/go-fabric/cluster/spec"
+	descriptordef "thingfabric.dev/go-fabric/cluster/spec/descriptor"
+	epmdef "thingfabric.dev/go-fabric/cluster/spec/electricalpowermeasurement"
+	ptdef "thingfabric.dev/go-fabric/cluster/spec/powertopology"
+	"thingfabric.dev/go-fabric/controller/client"
+	"thingfabric.dev/go-fabric/fabrictest"
+	"thingfabric.dev/go-fabric/mdns"
+	"thingfabric.dev/go-fabric/node"
 )
 
 // siteLauncher is the only launcher the tests admit: every node it starts is

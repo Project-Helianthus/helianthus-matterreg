@@ -6,7 +6,7 @@
   `github.com/Project-Helianthus/helianthus-matter-binding` to
   `github.com/Project-Helianthus/helianthus-matterreg`. Go callers must change
   each import path and the `require` line in their `go.mod` to the new path,
-  then run `go mod tidy`. Issue #137 tracks the update from go-fabric v0.22.2.
+  then run `go mod tidy`. Issue #137 corrected the commissioning fixtures. The go-fabric dependency now uses `thingfabric.dev/go-fabric` v0.25.0 under issue #140.
 
 - Breaking: one publication rule replaces per-capability Portal selection. A
   live resource is published only when its catalog element has a

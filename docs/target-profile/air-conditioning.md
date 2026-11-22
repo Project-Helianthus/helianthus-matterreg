@@ -150,7 +150,7 @@ authorization gates before 0.9.
 
 ## Matter 1.6.1 target reconciliation
 
-The adopted SDK is [go-fabric](https://github.com/SukramJ/go-fabric) on
+The adopted SDK is [go-fabric](https://github.com/thingfabric/go-fabric) on
 **Matter 1.6.1**, as recorded in the [baseline](../SDK_BASELINE.md).
 The checked-in lock, validator, mapping reference and hosted job remain legacy
 Matter 1.7 artifacts pending owner-controlled replacement; they have not been
@@ -178,7 +178,7 @@ authority to publish against the legacy 1.7 model.
 For each candidate, obtain the retained Matter 1.6.1 normative device/cluster
 corpus and inspect the adopted SDK definitions, referenced features, attributes,
 commands, events, access, units, ranges, nullability and transitive mandatory
-composition. Public [upstream source](https://github.com/SukramJ/go-fabric/tree/main)
+composition. Public [upstream source](https://github.com/thingfabric/go-fabric/tree/main)
 locates the implementation; it does not supply the missing retained model corpus.
 Reconcile generated behavior and accepted public semantic target evidence with
 each native fact, direction, loss and falsifier. Do not substitute legacy

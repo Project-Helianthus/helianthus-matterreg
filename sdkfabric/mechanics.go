@@ -12,7 +12,7 @@ import (
 	"github.com/Project-Helianthus/helianthus-matterreg/adoption"
 	"github.com/Project-Helianthus/helianthus-matterreg/qualification/commissioning"
 	"github.com/Project-Helianthus/helianthus-matterreg/qualification/reportharness"
-	"github.com/SukramJ/go-fabric/node"
+	"thingfabric.dev/go-fabric/node"
 )
 
 // The mechanics below connect the commissioning runner and the report harness

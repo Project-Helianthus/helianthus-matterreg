@@ -13,7 +13,7 @@ import (
 // package's static boundary is checked even where the gofabric-tagged binding
 // is not compiled.
 
-const fabricModule = "github.com/SukramJ/go-fabric/"
+const fabricModule = "thingfabric.dev/go-fabric/"
 
 func parseSource(t *testing.T, name string) *ast.File {
 	t.Helper()

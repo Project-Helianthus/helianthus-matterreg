@@ -3,9 +3,9 @@
   "accepted_runtime_composition_profile_sha256": null,
   "sdk": {
     "provider": "go-fabric",
-    "module": "github.com/SukramJ/go-fabric",
-    "release_tag": "v0.22.2",
-    "checksum": "h1:HnyaeM+hhrfiD+IYHcH1oPj0NvOpYgimzU+2jc4CNrc=",
+    "module": "thingfabric.dev/go-fabric",
+    "release_tag": "v0.25.0",
+    "checksum": "h1:zuDqPpoEa06nRv5WF22dASsKa0FqXKAUUncm+Lyq78M=",
     "model": {"name": "Matter", "version": "1.6.1"}
   },
   "mapping": null,

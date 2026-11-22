@@ -6,11 +6,10 @@ The umbrella remains open. Nothing here is stable before Helianthus 1.0.
 
 ## Consumption and contribution authority
 
-The owner has adopted SukramJ/go-fabric as the Matter SDK on its Matter 1.6.1
-data model. Matter 1.7-only elements are deferred. This direction does not
-establish a selected dependency tag, complete license closure, passing build or
-runtime qualification, or production admission. Updating the lock and its
-baseline documentation is separately owned work; this process changes neither.
+The owner has adopted [thingfabric/go-fabric](https://github.com/thingfabric/go-fabric)
+v0.25.0 as the Matter SDK on its Matter 1.6.1 data model. Matter 1.7-only
+elements are deferred. The dependency tag does not establish complete license
+closure, passing runtime qualification, or production admission.
 
 Consuming the Apache-2.0 library and granting rights to a contribution are separate
 decisions. The supplied owner brief says the go-fabric CLA grants relicensing,

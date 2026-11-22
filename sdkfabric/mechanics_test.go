@@ -15,11 +15,11 @@ import (
 	"github.com/Project-Helianthus/helianthus-matterreg/qualification/commissioning"
 	"github.com/Project-Helianthus/helianthus-matterreg/qualification/reportharness"
 	"github.com/Project-Helianthus/helianthus-matterreg/sdkfabric"
-	"github.com/SukramJ/go-fabric/client/discovery"
-	epmdef "github.com/SukramJ/go-fabric/cluster/spec/electricalpowermeasurement"
-	"github.com/SukramJ/go-fabric/controller/client"
-	"github.com/SukramJ/go-fabric/fabrictest"
-	"github.com/SukramJ/go-fabric/node"
+	"thingfabric.dev/go-fabric/client/discovery"
+	epmdef "thingfabric.dev/go-fabric/cluster/spec/electricalpowermeasurement"
+	"thingfabric.dev/go-fabric/controller/client"
+	"thingfabric.dev/go-fabric/fabrictest"
+	"thingfabric.dev/go-fabric/node"
 )
 
 // aa30Run is one reference host on the in-memory site, with the real node it

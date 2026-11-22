@@ -2,15 +2,15 @@
 
 ## Adopted SDK
 
-Helianthus adopts [go-fabric](https://github.com/SukramJ/go-fabric)
+Helianthus adopts [go-fabric](https://github.com/thingfabric/go-fabric)
 under Apache-2.0: a pure-Go semantic port of matter.js using the Matter **1.6.1**
 data model. This is the selected SDK, not an implementation-readiness verdict.
-It is not certified. Public source links locate upstream material; no remote
-source was fetched for this reconciliation.
+It is not certified. Public source links locate upstream material; source
+availability alone does not establish normative coverage or qualification.
 
 The checked-in [lock](../sdk/matter-sdk.lock.json) is the module pin.
-`sdk.provider` is `go-fabric`, `sdk.module` is `github.com/SukramJ/go-fabric`,
-`sdk.release_tag` is `v0.22.2`, and `sdk.checksum` is the module zip checksum
+`sdk.provider` is `go-fabric`, `sdk.module` is `thingfabric.dev/go-fabric`,
+`sdk.release_tag` is `v0.25.0`, and `sdk.checksum` is the module zip checksum
 on the matching `go.sum` line (not the `go.mod` checksum). `sdk.model` is
 Matter 1.6.1. The [validator](../tools/validate_lock.py) requires those fields
 to match the module files exactly and rejects any other identity.
@@ -26,7 +26,7 @@ The supplied graded source-inspection result supports the following identities.
 that inspection. Full normative requirements, feature applicability, mandatory
 composition, target mappings, generated behavior and build results remain
 **Unknown** unless separately evidenced. Public
-[go-fabric source](https://github.com/SukramJ/go-fabric/tree/main) is a locator,
+[go-fabric source](https://github.com/thingfabric/go-fabric/tree/main) is a locator,
 not retained normative-corpus evidence or independent replay.
 
 | Component | Previously recorded identity | Adopted source identity | Disposition and limit |

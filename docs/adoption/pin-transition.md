@@ -9,8 +9,8 @@ The umbrella remains open. Nothing here is stable before Helianthus 1.0.
 The module requirement in `go.mod` is the current release, recorded in
 [Breaking changes absorbed by the installed module requirement](#breaking-changes-absorbed-by-the-installed-module-requirement).
 The [lock](../../sdk/matter-sdk.lock.json) now records that same identity:
-provider `go-fabric`, module `github.com/SukramJ/go-fabric`, release tag
-`v0.22.2`, and the module zip checksum from `go.sum`. The hosted workflow runs
+provider `go-fabric`, module `thingfabric.dev/go-fabric`, release tag
+`v0.25.0`, and the module zip checksum from `go.sum`. The hosted workflow runs
 the Go adapter job only. `scripts/checkout_sdk.sh`,
 `scripts/run_upstream_fixture.sh` and `scripts/run_owned_group.sh` are not part
 of the tree. Admission in `runtime/production_readiness.py` is unchanged and
@@ -30,7 +30,7 @@ are separate from the missing/failed/unverified/pass states of the
 
 ## Breaking changes absorbed by the installed module requirement
 
-**Proven:** `go.mod` requires `github.com/SukramJ/go-fabric` at `v0.22.2`, and
+**Proven:** `go.mod` requires `thingfabric.dev/go-fabric` at `v0.25.0`, and
 its `go` directive is `1.27.4`, the version that release's module file
 declares. The previous requirement was `v0.16.0`. `go.sum` records the
 release. No file inside go-fabric is changed. The lock records this requirement's
@@ -88,7 +88,7 @@ supplies a verified value.
 
 Which exact go-fabric tag and module identity does the lock record?
 
-**Installed answer: the module requirement `v0.22.2`.** The lock, `go.mod` and
+**Installed answer: the module requirement `v0.25.0`.** The lock, `go.mod` and
 the zip checksum line in `go.sum` name the same module path and tag. An earlier
 note in this file suggested `v0.13.12` because that was the only newly inspected
 tag in one supplied report. That note is not the pin. The installed tag is not
@@ -99,8 +99,8 @@ risks.
 | Identity field | Proposed value | Grade and limit |
 | --- | --- | --- |
 | Provider | `go-fabric` | Owner decision. |
-| Module path | `github.com/SukramJ/go-fabric` | Hypothesis. It is the public locator and the exact value [`runtime/adoption_baseline.py`](../../runtime/adoption_baseline.py) accepts. Confirm it against the `module` directive in the retained tag's `go.mod`. A difference stops the transition. |
-| Exact tag | `v0.22.2` | Installed module requirement. Not a qualification result. |
+| Module path | `thingfabric.dev/go-fabric` | Installed value. It matches the `module` directive for v0.25.0 and the exact value [`runtime/adoption_baseline.py`](../../runtime/adoption_baseline.py) accepts. |
+| Exact tag | `v0.25.0` | Installed module requirement. Not a qualification result. |
 | Module zip checksum | The `go.sum` line whose version is the tag alone | Installed. The lock must match that line, not the `go.mod` checksum line. |
 | `go.mod` checksum | The `go.sum` line whose version ends in `/go.mod` | Recorded by the module sum. It is not the lock checksum. |
 | Data model | Matter 1.6.1 | Owner decision; reported source identity for the proposed tag only. |
@@ -212,7 +212,7 @@ job and does not keep a second job.
 | Owner change | Current consumer | What the change must handle |
 | --- | --- | --- |
 | `sdk/matter-sdk.lock.json` records the module pin | `tools/validate_lock.py` checks it against `go.mod` and the zip checksum in `go.sum` | The admission module is a separate comparison and is unchanged. |
-| Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.22.2` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matterreg` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
+| Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.25.0` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matterreg` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
 | Migrate `runtime/production_readiness.py` | Imported by `tools/validate_lock.py`, `runtime/adoption_baseline.py` and both test modules below. `EXPECTED_LOCK` and its pinned constants, `validate_build_evidence`, `REQUIRED_BUILD_TARGETS` and `validate_composition` all assume a commit-pinned C++ SDK. | Follow the evaluator rules below. |
 | `tools/validate_lock.py` checks the module pin | `.github/workflows/sdk-baseline.yml` runs it. `validate_workflow_pins` is unchanged. | Checkout and mapping-file options are not part of the checker. |
 | `runtime/adoption_baseline.py` accepts only the pinned identity | `tests/test_adoption_baseline.py` calls the real evaluator | Provider, module, release tag, checksum and model must equal the lock. Another tag is rejected. |
