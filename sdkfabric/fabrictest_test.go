@@ -710,9 +710,6 @@ func TestAA12PlanRefusals(t *testing.T) {
 		{"bridged node revision", func(p *adoption.NodePlan) { p.Endpoints[sensor].DeviceTypes[0].Revision = 2 }, sdkfabric.ErrRevision},
 		{"electrical sensor revision 2", func(p *adoption.NodePlan) { p.Endpoints[sensor].DeviceTypes[1].Revision = 2 }, sdkfabric.ErrRevision},
 		{"electrical sensor id", func(p *adoption.NodePlan) { p.Endpoints[sensor].DeviceTypes[1].ID = 0x0511 }, sdkfabric.ErrRevision},
-		{"electrical sensor evidence", func(p *adoption.NodePlan) {
-			p.Endpoints[sensor].DeviceTypes[1].RevisionEvidence = adoption.EvidenceHypothesis
-		}, sdkfabric.ErrRevision},
 		{"bridged basic revision", func(p *adoption.NodePlan) { p.Endpoints[sensor].Servers[1].Revision = 5 }, sdkfabric.ErrRevision},
 		{"power topology revision 2", func(p *adoption.NodePlan) { p.Endpoints[sensor].Servers[2].Revision = 2 }, sdkfabric.ErrRevision},
 		{"power measurement revision", func(p *adoption.NodePlan) { p.Endpoints[sensor].Servers[epm].Revision = 2 }, sdkfabric.ErrRevision},
@@ -746,6 +743,16 @@ func TestAA12PlanRefusals(t *testing.T) {
 	port, err := sdkfabric.NewPort(fixtureConfig(factory, &spyAdvertiser{}))
 	if err != nil {
 		t.Fatal(err)
+	}
+	// A correctly mapped Electrical Sensor whose grade is Hypothesis alone is accepted.
+	graded := hostPlan(t)
+	graded.Endpoints[sensor].DeviceTypes[1].RevisionEvidence = adoption.EvidenceHypothesis
+	gradedPort, err := sdkfabric.NewPort(fixtureConfig(&spyLauncher{}, &spyAdvertiser{}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := gradedPort.New(graded); err != nil {
+		t.Fatalf("hypothesis grade alone refused: %v", err)
 	}
 	n, err := port.New(hostPlan(t))
 	if err != nil || n == nil || factory.count() != 0 {

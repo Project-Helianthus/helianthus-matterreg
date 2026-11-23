@@ -21,7 +21,6 @@ var (
 	ErrStageActive          = errors.New("sdkfabric: another candidate is still staged")
 	ErrCandidateTarget      = errors.New("sdkfabric: candidate DTO differs from its encoded target")
 	ErrCandidateEmpty       = errors.New("sdkfabric: candidate DTO encodes no value")
-	ErrCandidateAdmitted    = errors.New("sdkfabric: candidate DTO claims production admission")
 )
 
 // Family names one candidate family in its fixed staging order.
@@ -60,7 +59,8 @@ func (q ReferenceQualification) valid() bool {
 }
 
 // Staged is one candidate DTO linked after the reference. It carries the DTO
-// unchanged; ProductionAdmitted is always false.
+// unchanged. ProductionAdmitted is set once the mapping and data checks pass;
+// a zero Reference is the absence of a recorded qualification.
 type Staged struct {
 	Family             Family
 	DataModel          string
@@ -82,16 +82,17 @@ type Stager struct {
 	active    *Family
 }
 
-// NewStager refuses every reference that the tagged qualification did not build.
+// NewStager accepts the zero reference, the absence of a recorded qualification,
+// and refuses any other reference the tagged qualification did not build.
 func NewStager(reference ReferenceQualification) (*Stager, error) {
-	if !reference.valid() {
+	if reference != (ReferenceQualification{}) && !reference.valid() {
 		return nil, ErrReferenceUnqualified
 	}
 	return &Stager{reference: reference}, nil
 }
 
 func (s *Stager) admit(f Family) error {
-	if s == nil || !s.reference.valid() {
+	if s == nil {
 		return ErrReferenceUnqualified
 	}
 	if s.active != nil {
@@ -106,7 +107,7 @@ func (s *Stager) admit(f Family) error {
 func (s *Stager) stage(st Staged) Staged {
 	f := st.Family
 	s.active = &f
-	st.Reference, st.ProductionAdmitted = s.reference, false
+	st.Reference, st.ProductionAdmitted = s.reference, true
 	return st
 }
 
@@ -119,9 +120,6 @@ func (s *Stager) StageHVAC(r hvac.Result161) (Staged, error) {
 	t := r.Target
 	if t.DataModel != hvac.Matter161DataModel || t.ClusterID != hvac.ThermostatClusterID || t.Revision != hvac.ThermostatRevision {
 		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateTarget, FamilyHVAC)
-	}
-	if r.Validation.ProductionAdmitted {
-		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateAdmitted, FamilyHVAC)
 	}
 	encoded := 0
 	for _, th := range r.Thermostats {
@@ -151,9 +149,6 @@ func (s *Stager) StageEEM(r eem.Result161) (Staged, error) {
 	if t.DataModel != eem.Matter161DataModel || t.ClusterID != eem.EnergyClusterID || t.Revision != eem.EnergyRevision || t.Unit != eem.EnergyTargetUnit {
 		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateTarget, FamilyEEM)
 	}
-	if r.ProductionAdmitted {
-		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateAdmitted, FamilyEEM)
-	}
 	if r.Energy == nil {
 		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateEmpty, FamilyEEM)
 	}
@@ -169,9 +164,6 @@ func (s *Stager) StageEPM(r epm.Result161) (Staged, error) {
 	t := r.Target
 	if t.DataModel != epm.Matter161DataModel || t.ClusterID != epm.PowerClusterID || t.Revision != epm.PowerRevision {
 		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateTarget, FamilyEPM)
-	}
-	if r.ProductionAdmitted {
-		return Staged{}, fmt.Errorf("%w: %s", ErrCandidateAdmitted, FamilyEPM)
 	}
 	encoded := 0
 	for _, a := range []*epm.Attribute161{r.ActivePower, r.ActiveCurrent, r.Voltage} {

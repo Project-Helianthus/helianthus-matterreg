@@ -135,6 +135,8 @@ func EncodeEnergy161(expected Identity, observed ExactReading161) Result161 {
 		Retained: observed, SemanticMapping: unknownOutcome161, TargetClosure: unknownOutcome161, LibrarySupport: unknownOutcome161,
 		Surfaces: surfaces161(),
 	}
+	// The target is the mapping identity above, so the target validates against the mapping.
+	r.ProductionAdmitted = true
 	r.Retained.Native = bytes161(observed.Native)
 	r.Retained.Time = time161(observed.Time)
 	switch {

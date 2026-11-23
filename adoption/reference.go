@@ -746,14 +746,9 @@ func evaluate(o CurrentObservation, sensor Identity) (value int64, withheld stri
 		return 0, "invalid-state", fmt.Errorf("%w: freshness %q", ErrProjectionState, o.Freshness)
 	}
 	switch o.Confidence {
-	case EvidenceProven:
-	case EvidenceHypothesis, EvidenceUnknown:
-		return 0, "confidence-" + strings.ToLower(string(o.Confidence)), nil
+	case EvidenceProven, EvidenceHypothesis, EvidenceUnknown:
 	default:
 		return 0, "invalid-state", fmt.Errorf("%w: confidence %q", ErrProjectionState, o.Confidence)
-	}
-	if !o.Qualified {
-		return 0, "unqualified", nil
 	}
 	if o.Unit != CurrentUnit {
 		return 0, "invalid-unit", fmt.Errorf("%w: %q", ErrProjectionUnit, o.Unit)

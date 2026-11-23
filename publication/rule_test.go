@@ -138,46 +138,70 @@ func TestPublishedResourcesKeepTheirNumbersAcrossALoad(t *testing.T) {
 	}
 }
 
-// Sixty-four numbers are stored; the sixty-fifth live id is refused and the
-// stored ids stay unchanged, also after a second load.
-func TestStoreRefusesAnIDBeyondItsCapacity(t *testing.T) {
+// Many more than sixty-four ids get distinct, stable numbers and survive a
+// second load; no capacity other than the 16-bit endpoint space applies.
+func TestStoreAssignsManyMoreThanSixtyFourStableNumbers(t *testing.T) {
 	var disk recorder
 	store := NewStore()
-	ids := make([]string, 0, StoreCapacity)
-	for index := 1; index <= StoreCapacity; index++ {
+	const count = 100
+	ids := make([]string, 0, count)
+	for index := 1; index <= count; index++ {
 		ids = append(ids, syntheticID(index))
 	}
-	full := store.Assign(ids, disk.save)
-	if len(full.Endpoints) != StoreCapacity || len(full.Refused) != 0 {
-		t.Fatalf("filling the store = %d endpoints, refused %#v", len(full.Endpoints), full.Refused)
+	first := store.Assign(ids, disk.save)
+	if len(first.Endpoints) != count || len(first.Refused) != 0 {
+		t.Fatalf("assigning %d ids = %d endpoints, refused %#v", count, len(first.Endpoints), first.Refused)
 	}
 	for index, id := range ids {
-		if full.Endpoints[id] != uint16(index+1) {
-			t.Fatalf("%s = %d, want %d", id, full.Endpoints[id], index+1)
+		if first.Endpoints[id] != uint16(index+1) {
+			t.Fatalf("%s = %d, want %d", id, first.Endpoints[id], index+1)
 		}
 	}
-	saved := disk.last(t)
-
-	reloaded, err := Load(saved)
+	reloaded, err := Load(disk.last(t))
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	extra := syntheticID(StoreCapacity + 1)
-	result := reloaded.Assign(append([]string{extra}, ids...), refuseSave(t))
-	if want := map[string]string{extra: ReasonCapacity}; !reflect.DeepEqual(result.Refused, want) {
-		t.Fatalf("refused = %#v, want %#v", result.Refused, want)
+	second := reloaded.Assign(ids, refuseSave(t))
+	if !reflect.DeepEqual(second.Endpoints, first.Endpoints) || len(second.Refused) != 0 {
+		t.Fatalf("second assignment = %#v, want %#v", second, first)
 	}
-	if !reflect.DeepEqual(result.Endpoints, full.Endpoints) {
-		t.Fatal("stored ids changed after a refused assignment")
+}
+
+// With one number left and two new ids, the last legal number 0xFFFE is
+// assigned and saved, survives a load, and the extra id is refused with the
+// exhaustion reason and holds no number.
+func TestStoreAssignsTheLastLegalNumberAndRefusesPastIt(t *testing.T) {
+	var disk recorder
+	store := NewStore()
+	const lastLegal = 0xFFFE
+	for index := 1; index < lastLegal; index++ {
+		id := syntheticID(index)
+		store.byID[id] = uint16(index)
+		store.byNumber[uint16(index)] = id
 	}
-	if !bytes.Equal(reloaded.Document(), saved) {
-		t.Fatal("stored document changed after a refused assignment")
+	if store.Len() != lastLegal-1 {
+		t.Fatalf("filled store = %d ids, want %d", store.Len(), lastLegal-1)
 	}
-	if _, ok := reloaded.Endpoint(extra); ok {
+	last, extra := syntheticID(lastLegal), syntheticID(lastLegal+1)
+	result := store.Assign([]string{extra, last}, disk.save)
+	if len(result.Endpoints) != 1 || result.Endpoints[last] != lastLegal {
+		t.Fatalf("endpoints = %#v, want %s at %d", result.Endpoints, last, lastLegal)
+	}
+	if reason := result.Refused[extra]; reason != ReasonExhausted || len(result.Refused) != 1 {
+		t.Fatalf("refused = %#v, want %s for %s", result.Refused, ReasonExhausted, extra)
+	}
+	if _, ok := store.Endpoint(extra); ok {
 		t.Fatal("refused id holds a number")
 	}
-	if reloaded.Len() != StoreCapacity {
-		t.Fatalf("stored ids = %d, want %d", reloaded.Len(), StoreCapacity)
+	reloaded, err := Load(disk.last(t))
+	if err != nil {
+		t.Fatalf("Load of the saved document: %v", err)
+	}
+	if number, ok := reloaded.Endpoint(last); !ok || number != lastLegal {
+		t.Fatalf("reloaded %s = %d, %t; want %d", last, number, ok, lastLegal)
+	}
+	if _, ok := reloaded.Endpoint(extra); ok {
+		t.Fatal("refused id was saved")
 	}
 }
 
@@ -415,11 +439,6 @@ func TestStoreRefusesAMalformedID(t *testing.T) {
 }
 
 func TestMalformedStoreDocumentIsRefused(t *testing.T) {
-	records := make([]string, 0, StoreCapacity+1)
-	for index := 1; index <= StoreCapacity+1; index++ {
-		records = append(records, fmt.Sprintf(`{"resource_id":%q,"endpoint":%d}`, syntheticID(index), index))
-	}
-	overfull := `{"endpoints":[` + joinComma(records) + `]}`
 	cases := map[string]string{
 		"empty document":    ``,
 		"not json":          `{not json`,
@@ -443,7 +462,6 @@ func TestMalformedStoreDocumentIsRefused(t *testing.T) {
 		"duplicate id":      `{"endpoints":[{"resource_id":"synthetic-resource-a","endpoint":1},{"resource_id":"synthetic-resource-a","endpoint":2}]}`,
 		"duplicate number":  `{"endpoints":[{"resource_id":"synthetic-resource-a","endpoint":1},{"resource_id":"synthetic-resource-b","endpoint":1}]}`,
 		"trailing data":     `{"endpoints":[]}{}`,
-		"over capacity":     overfull,
 	}
 	for name, document := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -453,15 +471,4 @@ func TestMalformedStoreDocumentIsRefused(t *testing.T) {
 			}
 		})
 	}
-}
-
-func joinComma(items []string) string {
-	var buffer bytes.Buffer
-	for index, item := range items {
-		if index > 0 {
-			buffer.WriteByte(',')
-		}
-		buffer.WriteString(item)
-	}
-	return buffer.String()
 }

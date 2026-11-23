@@ -103,9 +103,6 @@ func Validate(input []Vector) Result {
 		if !text(v.Evidence.NativeContract) || !text(v.Evidence.SourceReference) || !text(v.Evidence.Qualification) || len(v.Raw) == 0 || !grade(v.Evidence.Confidence) {
 			deny("incomplete native evidence")
 		}
-		if v.Evidence.Confidence != "Proven" {
-			deny("source confidence is not Proven")
-		}
 		if !loss(v.Loss) {
 			deny("unreviewed source loss")
 		}

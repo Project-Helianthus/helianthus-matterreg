@@ -6,6 +6,20 @@ The umbrella remains open. Nothing here is stable before Helianthus 1.0.
 
 ## Status and authority
 
+**go-fabric release (XX01):** the go-fabric release recorded at this head is
+`v0.25.0`, in the module requirement, `go.sum`, the lock's `release_tag` and its
+zip `checksum`. This worker had no network access, so the latest release
+was not re-read here; the tag is recorded as installed and the re-pin check belongs
+to the pipeline that provisions the module. Old tag `v0.25.0`, new
+tag `v0.25.0` (no change). The `thingfabric.dev/go-fabric` module path is the one
+the repository's `go.mod` and the lock carry.
+
+**Superseded where they describe the earlier evaluator:** the evaluator and checker
+migration, rollback and ordering sections below record the transition plan as it
+was written. XX01 applied the evaluator and checker parts. Their statements that
+the profile pin and the mapping stay unset describe the committed state before the
+first complete endpoint writes them, not a permanent rule.
+
 The module requirement in `go.mod` is the current release, recorded in
 [Breaking changes absorbed by the installed module requirement](#breaking-changes-absorbed-by-the-installed-module-requirement).
 The [lock](../../sdk/matter-sdk.lock.json) now records that same identity:
@@ -13,8 +27,10 @@ provider `go-fabric`, module `thingfabric.dev/go-fabric`, release tag
 `v0.25.0`, and the module zip checksum from `go.sum`. The hosted workflow runs
 the Go adapter job only. `scripts/checkout_sdk.sh`,
 `scripts/run_upstream_fixture.sh` and `scripts/run_owned_group.sh` are not part
-of the tree. Admission in `runtime/production_readiness.py` is unchanged and
-stays fail closed.
+of the tree. Admission in `runtime/production_readiness.py` is declared from the
+specification mapping and the pinned accepted composition profile, and checks the
+go-fabric module, release tag and checksum of the lock. The committed lock keeps
+the mapping and profile pins `null` until the first complete endpoint writes them.
 
 The sections after the breaking-change record were a proposal for an earlier
 tag. They are not a second pin. Where they name another tag, that tag is not
@@ -34,7 +50,7 @@ are separate from the missing/failed/unverified/pass states of the
 its `go` directive is `1.27.4`, the version that release's module file
 declares. The previous requirement was `v0.16.0`. `go.sum` records the
 release. No file inside go-fabric is changed. The lock records this requirement's
-module path, tag and zip checksum. The admission evaluator is unchanged.
+module path, tag and zip checksum. The admission evaluator checks the same pin (see the consumer trace).
 
 Each row is a breaking change the release notes mark between `v0.16.0` and
 `v0.22.2`, or a removal or comparability change those notes state in the same
@@ -202,9 +218,10 @@ module closure instead of narrowing it by guesswork.
 ## Owner-only changes traced to current consumers
 
 The module requirement and the lock pin are installed. The table records the
-consumer trace. `runtime/production_readiness.py` is unchanged: admission still
-compares a supplied lock with the baseline embedded in that module, and the
-unset profile pin keeps allocation denied. Rows for `scripts/checkout_sdk.sh`,
+consumer trace. `runtime/production_readiness.py` compares a supplied lock with the
+committed go-fabric pin, checks the optional mapping and profile pins, and permits
+only with both pins set and matching. The committed profile pin is unset, so
+allocation is not permitted yet. Rows for `scripts/checkout_sdk.sh`,
 `scripts/run_upstream_fixture.sh` and `scripts/run_owned_group.sh` describe
 files that are no longer in the tree. The hosted workflow keeps the adapter
 job and does not keep a second job.
@@ -213,11 +230,11 @@ job and does not keep a second job.
 | --- | --- | --- |
 | `sdk/matter-sdk.lock.json` records the module pin | `tools/validate_lock.py` checks it against `go.mod` and the zip checksum in `go.sum` | The admission module is a separate comparison and is unchanged. |
 | Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.25.0` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matterreg` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
-| Migrate `runtime/production_readiness.py` | Imported by `tools/validate_lock.py`, `runtime/adoption_baseline.py` and both test modules below. `EXPECTED_LOCK` and its pinned constants, `validate_build_evidence`, `REQUIRED_BUILD_TARGETS` and `validate_composition` all assume a commit-pinned C++ SDK. | Follow the evaluator rules below. |
+| Migrate `runtime/production_readiness.py` | Imported by `runtime/endpoint_selection.py`, `runtime/adoption_baseline.py` and the test modules below. Done for the go-fabric pin: `EXPECTED_LOCK`, the C++ build target list and the commit comparison are removed. | The evaluator rules below apply. |
 | `tools/validate_lock.py` checks the module pin | `.github/workflows/sdk-baseline.yml` runs it. `validate_workflow_pins` is unchanged. | Checkout and mapping-file options are not part of the checker. |
 | `runtime/adoption_baseline.py` accepts only the pinned identity | `tests/test_adoption_baseline.py` calls the real evaluator | Provider, module, release tag, checksum and model must equal the lock. Another tag is rejected. |
 | Update `tests/test_production_readiness.py` | Its fixtures use `lock["sdk"]["commit"]`, `target_commit`, a Matter 1.7 profile identifier and the legacy build target names | Map each assertion to a successor or retire it with a stated reason. Do not weaken any denial assertion. |
-| Update `tests/test_adoption_baseline.py` | Its real-API test builds composition and build evidence from `EXPECTED_LOCK["sdk"]["commit"]` | Same rule. Its positive control must still pass, or the denial result proves nothing. |
+| Update `tests/test_adoption_baseline.py` | Its real-API test loads the committed lock and builds composition and build evidence from the go-fabric module, release tag and checksum | Same rule. Its positive control must still pass, or the denial result proves nothing. |
 | `scripts/checkout_sdk.sh`, `scripts/run_upstream_fixture.sh` and `scripts/run_owned_group.sh` | No hosted step calls them | Removed with the second hosted job. |
 | Update `examples/runtime-composition.profile.json` | Documented as the required shape in `docs/SDK_BASELINE.md`; carries `target_commit`, the legacy mapping and Electrical Sensor revision 2 | Move to the new identity join. It stays `proposed` with missing evidence. |
 | Reconcile documents | `docs/SDK_BASELINE.md`, `README.md`, `AGENTS.md`, `CONTRIBUTING.md`, `docs/adoption/matter-161-deferred.md`, `docs/adoption/reference-bridge.md`, `docs/adoption/gateway-library-composition.md`, `docs/PORTAL_ENDPOINT_LIFECYCLE.md`, `docs/go-fabric-build-qualification.md`, `docs/go-fabric-build-record-validator.md`, `docs/go-fabric-report-mechanics-harness.md`, `docs/go-fabric-runtime-qualification.md`, `docs/contribution-candidates/bridge.md`, `docs/contribution-candidates/eem.md` and the `docs/target-profile/` pages that cite the lock or evaluator | Each describes the lock as legacy or the evaluator's current shape. Re-read each one: "installed" must mean only the exact tag, never qualified. |
@@ -397,7 +414,7 @@ deployment or upstream submission, and it authorizes none. Its offline evidence 
 limited to synthetic and public fixtures, in-memory loopback and injected time. It
 adds no real-bus transmit path and no production eBUS arming switch.
 
-Production admission remains fail closed. eBUS MCP compatibility and GraphQL parity
+Production admission is declared from the specification mapping and the pinned accepted composition profile; it permits nothing until the first complete endpoint writes both pins. eBUS MCP compatibility and GraphQL parity
 are unchanged. No namespace or authorization gate is added before 0.9;
 authentication and authorization remain 0.11 roadmap work.
 

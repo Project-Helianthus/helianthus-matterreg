@@ -22,6 +22,15 @@ import validate_lock as pin_checker  # noqa: E402
 from validate_lock import validate_module_pin  # noqa: E402
 
 CHECKOUT_KEYS = ("repository", "commit", "upstream_merge", "data_model", "blobs")
+SYNTHETIC_MAPPING = {
+    "repository": "https://example.invalid/synthetic-docs-semantic.git",
+    "path": "synthetic/matter-1.6.1-roster.json",
+    "sha256": hashlib.sha256(b"synthetic docs-semantic roster").hexdigest(),
+}
+
+
+def committed_lock() -> dict:
+    return json.loads((ROOT / "sdk" / "matter-sdk.lock.json").read_text(encoding="utf-8"))
 
 
 def direct_requirement(root: Path = ROOT) -> tuple[str, str]:
@@ -251,45 +260,76 @@ class AdoptionBaselineTest(unittest.TestCase):
         self.assertEqual(result.retained_inputs, ("synthetic/source-record", "synthetic/build-record"))
 
     def test_real_production_api_and_independent_allocation_spy(self) -> None:
-        lock = copy.deepcopy(production_readiness.EXPECTED_LOCK)
+        lock = committed_lock()
+        lock["mapping"] = copy.deepcopy(SYNTHETIC_MAPPING)
         composition = {
             "schema_version": 1, "status": "accepted", "profile_id": "synthetic-profile",
-            "target_commit": lock["sdk"]["commit"], "mapping": copy.deepcopy(lock["mapping"]),
+            "module": lock["sdk"]["module"], "release_tag": lock["sdk"]["release_tag"], "checksum": lock["sdk"]["checksum"],
+            "mapping": copy.deepcopy(lock["mapping"]),
             "device_type": copy.deepcopy(lock["target"]["device_type"]),
-            "clusters": [{"id": key, "name": value, "evidence": "synthetic-source"}
-                         for key, value in production_readiness.REQUIRED_CLUSTERS.items()],
+            "clusters": [{"id": key, "name": value} for key, value in production_readiness.REQUIRED_CLUSTERS.items()],
             "electrical_power_measurement": {
-                "power_mode": {"value": "ac", "evidence": "synthetic-source"},
-                "number_of_measurement_types": {"value": 1, "evidence": "synthetic-source"},
-                "accuracy": [{"measurement_type": "active_power", "evidence": "synthetic-source"}],
-                "active_power": {"value": None, "evidence": "synthetic-source"},
+                "power_mode": {"value": "ac"},
+                "number_of_measurement_types": {"value": 1},
+                "accuracy": [{"measurement_type": "active_power"}],
+                "active_power": {"value": None},
             },
         }
-        build = {"schema_version": 1, "sdk_commit": lock["sdk"]["commit"],
-                 "targets": {name: "passed" for name in production_readiness.REQUIRED_BUILD_TARGETS}}
+        build = {"schema_version": 1, "module": lock["sdk"]["module"],
+                 "release_tag": lock["sdk"]["release_tag"], "checksum": lock["sdk"]["checksum"]}
+        digest = production_readiness._composition_digest(composition)
         self.assertEqual(production_readiness.validate_composition(lock, composition), ())
         self.assertEqual(production_readiness.validate_build_evidence(lock, build), ())
         original = copy.deepcopy((lock, composition, build))
-        allocate = Mock()
-        item = proposal()
-        for forge_pin in (False, True):
-            supplied_lock = copy.deepcopy(lock)
-            if forge_pin:
-                supplied_lock["accepted_runtime_composition_profile_sha256"] = hashlib.sha256(b"synthetic profile").hexdigest()
-            with patch.object(production_readiness, "evaluate", wraps=production_readiness.evaluate) as real:
-                result = baseline.evaluate_adoption_baseline(
-                    item, evidence(item), production_lock=supplied_lock,
-                    composition=composition, build_evidence=build,
-                )
-                real.assert_called_once_with(supplied_lock, composition, build)
-            self.assertTrue(result.proposal_valid)
-            self.assert_nonadmission(result)
-            self.assertFalse(result.production_decision.permitted)
-            if not forge_pin:
-                self.assertEqual(result.production_decision.reasons, ("no reviewed accepted runtime-composition profile is pinned",))
-            if result.permitted or result.production_decision.permitted:
-                allocate()
-        allocate.assert_not_called()
+
+        def with_profile(value: str | None) -> dict:
+            pinned = copy.deepcopy(lock)
+            pinned["accepted_runtime_composition_profile_sha256"] = value
+            return pinned
+
+        unmapped_composition = copy.deepcopy(composition)
+        unmapped_composition["mapping"] = None
+        unmapped = with_profile(production_readiness._composition_digest(unmapped_composition))
+        unmapped["mapping"] = None
+        other_mapping = with_profile(digest)
+        other_mapping["mapping"]["sha256"] = hashlib.sha256(b"other synthetic roster").hexdigest()
+        other_release = with_profile(digest)
+        other_release["sdk"]["release_tag"] = shifted_tag(lock["sdk"]["release_tag"])
+        other_checksum = with_profile(digest)
+        other_checksum["sdk"]["checksum"] = "h1:" + "A" * 43 + "="
+        cases = (
+            ("pinned", with_profile(digest), composition, build, ()),
+            ("profile pin null", with_profile(None), composition, build,
+             ("no reviewed accepted runtime-composition profile is pinned",)),
+            ("mapping null", unmapped, unmapped_composition, build, ("no reviewed mapping is pinned",)),
+            ("mapping digest differs", other_mapping, composition, build,
+             ("runtime-composition profile pins a different mapping revision",)),
+            ("other release tag", other_release, composition, build, ()),
+            ("other checksum", other_checksum, composition, build, ()),
+        )
+        for name, supplied_lock, supplied_composition, supplied_build, expected in cases:
+            with self.subTest(case=name):
+                allocate = Mock()
+                item = proposal()
+                with patch.object(production_readiness, "evaluate", wraps=production_readiness.evaluate) as real:
+                    result = baseline.evaluate_adoption_baseline(
+                        item, evidence(item), production_lock=supplied_lock,
+                        composition=supplied_composition, build_evidence=supplied_build,
+                    )
+                    real.assert_called_once_with(supplied_lock, supplied_composition, supplied_build)
+                self.assertTrue(result.proposal_valid)
+                self.assert_nonadmission(result)
+                if result.production_decision.permitted:
+                    allocate()
+                if expected:
+                    self.assertFalse(result.production_decision.permitted)
+                    self.assertIn(expected[0], result.production_decision.reasons)
+                elif name == "pinned":
+                    self.assertEqual(result.production_decision, production_readiness.Decision(True, ()))
+                else:
+                    self.assertFalse(result.production_decision.permitted)
+                    self.assertTrue(result.production_decision.reasons)
+                self.assertEqual(allocate.call_count, 1 if name == "pinned" else 0)
         self.assertEqual((lock, composition, build), original)
 
     def test_lock_names_module_path_tag_and_zip_checksum(self) -> None:
@@ -387,7 +427,6 @@ class ModulePinTest(unittest.TestCase):
 
     def test_each_identity_and_target_field_is_required(self) -> None:
         """Vary provider, module, release_tag, checksum, model name, model version and each target field."""
-        digest = hashlib.sha256(b"synthetic profile").hexdigest()
         samples = {
             "provider": with_value(self.lock, ("sdk", "provider"), "other-provider"),
             "module case": with_value(self.lock, ("sdk", "module"), "Thingfabric.dev/go-fabric"),
@@ -398,7 +437,6 @@ class ModulePinTest(unittest.TestCase):
             "model name": with_value(self.lock, ("sdk", "model", "name"), "Other"),
             "model version": with_value(self.lock, ("sdk", "model", "version"), "1.7"),
             "mapping": with_value(self.lock, ("mapping",), {"path": "synthetic"}),
-            "profile pin": with_value(self.lock, ("accepted_runtime_composition_profile_sha256",), digest),
             "checkout key": with_value(self.lock, ("sdk", "commit"), "synthetic"),
         }
         for name, section, field, value in (
@@ -445,10 +483,22 @@ class ModulePinTest(unittest.TestCase):
                 with self.assertRaises(AssertionError):
                     self.assertTrue(checker(self.lock, root))
 
-    def test_identity_comparison_mutants_are_killed(self) -> None:
-        """provider, module, release_tag, model, mapping, profile pin, checkout key and target identity."""
-        source = Path(pin_checker.__file__).read_text(encoding="utf-8")
+    def test_accepted_roster_and_profile_pins_are_accepted_by_shape(self) -> None:
         digest = hashlib.sha256(b"synthetic profile").hexdigest()
+        self.assertEqual(validate_module_pin(with_value(self.lock, ("mapping",), SYNTHETIC_MAPPING), ROOT), [])
+        self.assertEqual(validate_module_pin(with_value(self.lock, ("accepted_runtime_composition_profile_sha256",), digest), ROOT), [])
+        for name, mapping in (
+            ("extra key", {**SYNTHETIC_MAPPING, "commit": "synthetic"}),
+            ("missing key", {"repository": SYNTHETIC_MAPPING["repository"], "path": SYNTHETIC_MAPPING["path"]}),
+            ("digest not hex", {**SYNTHETIC_MAPPING, "sha256": "synthetic"}),
+        ):
+            with self.subTest(mapping=name):
+                self.assertTrue(validate_module_pin(with_value(self.lock, ("mapping",), mapping), ROOT))
+        self.assertTrue(validate_module_pin(with_value(self.lock, ("accepted_runtime_composition_profile_sha256",), "synthetic"), ROOT))
+
+    def test_identity_comparison_mutants_are_killed(self) -> None:
+        """provider, module, release_tag, model, mapping shape, checksum, checkout key and target identity."""
+        source = Path(pin_checker.__file__).read_text(encoding="utf-8")
         mutations = {
             "skip provider": ('sdk["provider"] != "go-fabric"', "False"),
             "casefold module": ("sdk[\"module\"] != module", "sdk[\"module\"].casefold() != module.casefold()"),
@@ -459,11 +509,8 @@ class ModulePinTest(unittest.TestCase):
             ),
             "skip model": ('sdk["model"] != {"name": "Matter", "version": "1.6.1"}', "False"),
             "allow extra sdk keys": ("set(lock[\"sdk\"]) != SDK_FIELDS", "not SDK_FIELDS <= set(lock[\"sdk\"])"),
-            "skip mapping": ('lock["mapping"] is not None', "False"),
-            "skip profile pin": (
-                'lock["accepted_runtime_composition_profile_sha256"] is not None',
-                "False",
-            ),
+            "skip mapping shape": ("(not isinstance(mapping, dict) or set(mapping) != MAPPING_FIELDS)", "False"),
+            "skip checksum identity": ('sdk["checksum"] != checksum', "False"),
             "revision only target": (
                 "if target.get(key) != expected:",
                 "if isinstance(expected, dict) and expected.get(\"revision\") is not None and "
@@ -477,8 +524,8 @@ class ModulePinTest(unittest.TestCase):
             "major minor tag": with_value(self.lock, ("sdk", "release_tag"), shifted_tag(self.tag)),
             "skip model": with_value(self.lock, ("sdk", "model", "version"), "1.7"),
             "allow extra sdk keys": with_value(self.lock, ("sdk", "commit"), "synthetic"),
-            "skip mapping": with_value(self.lock, ("mapping",), {"path": "synthetic"}),
-            "skip profile pin": with_value(self.lock, ("accepted_runtime_composition_profile_sha256",), digest),
+            "skip mapping shape": with_value(self.lock, ("mapping",), {**SYNTHETIC_MAPPING, "commit": "synthetic"}),
+            "skip checksum identity": with_value(self.lock, ("sdk", "checksum"), sum_checksum(self.module, self.tag, go_mod=True)),
             "revision only target": with_value(self.lock, ("target", "device_type", "name"), "Other Sensor"),
         }
         for name, (old, new) in mutations.items():

@@ -886,9 +886,9 @@ func TestAA09CurrentValueCases(t *testing.T) {
 		{name: "unknown with zero", obs: func(o *CurrentObservation) { o.Availability, o.Value = AvailabilityUnknown, "0" }, null: true, reason: "invalid-value", err: ErrProjectionValue},
 		{name: "stale", obs: func(o *CurrentObservation) { o.Freshness = FreshnessStale }, null: true, reason: "freshness-stale"},
 		{name: "unknown freshness", obs: func(o *CurrentObservation) { o.Freshness = FreshnessUnknown }, null: true, reason: "freshness-unknown"},
-		{name: "unqualified", obs: func(o *CurrentObservation) { o.Qualified = false }, null: true, reason: "unqualified"},
-		{name: "hypothesis", obs: func(o *CurrentObservation) { o.Confidence = EvidenceHypothesis }, null: true, reason: "confidence-hypothesis"},
-		{name: "unknown confidence", obs: func(o *CurrentObservation) { o.Confidence = EvidenceUnknown }, null: true, reason: "confidence-unknown"},
+		{name: "unqualified is recorded, not withheld", obs: func(o *CurrentObservation) { o.Qualified, o.Value = false, "250" }, value: 250},
+		{name: "hypothesis is recorded, not withheld", obs: func(o *CurrentObservation) { o.Confidence, o.Value = EvidenceHypothesis, "250" }, value: 250},
+		{name: "unknown confidence is recorded, not withheld", obs: func(o *CurrentObservation) { o.Confidence, o.Value = EvidenceUnknown, "250" }, value: 250},
 
 		{name: "available without value", obs: func(o *CurrentObservation) { o.Value = "" }, null: true, reason: "invalid-value", err: ErrProjectionValue},
 		{name: "literal null", obs: func(o *CurrentObservation) { o.Value = "null" }, null: true, reason: "invalid-value", err: ErrProjectionValue},

@@ -8,9 +8,10 @@ switch. Every other disposition, an unmapped element and a malformed resource
 id are withheld with a named reason. Several published elements of one
 resource are one endpoint. A relation allocates no endpoint.
 
-The endpoint store holds at most ``STORE_CAPACITY`` resource ids for the life
-of a node; a further new id is withheld. This module creates no Matter node,
-endpoint, fabric or commissioning state and is not an admission decision.
+The endpoint store has no resource-count capacity; a new id is withheld only
+when no number up to the 16-bit endpoint bound is free. This module creates no
+Matter node, endpoint, fabric or commissioning state and is not an admission
+decision.
 """
 
 from __future__ import annotations
@@ -36,10 +37,7 @@ REASON_EXCLUDED = "element is on the exclusion list"
 REASON_RELATION = "a relation allocates no endpoint"
 REASON_NO_DISPOSITION = "element has no disposition"
 REASON_UNRECOGNISED = "element disposition is not recognised"
-REASON_CAPACITY = "endpoint store holds its full capacity of resource ids"
 REASON_EXHAUSTED = "endpoint number space is exhausted for this node lifecycle"
-
-STORE_CAPACITY = 64
 
 _NAMED = frozenset({UNKNOWN, UNSUPPORTED, WITHHELD})
 _TOKEN = re.compile(r"[^\x00\r\n\t]+")
@@ -124,9 +122,11 @@ class PublicationRule:
 
 
 def allocation_refusal(stored_ids: int, next_endpoint: int, last_endpoint: int) -> str | None:
-    """Refuse a new number once the store holds its capacity or the number space is spent."""
-    if stored_ids >= STORE_CAPACITY:
-        return REASON_CAPACITY
+    """Refuse a new number once the number space is spent; ``stored_ids`` is not a bound.
+
+    The argument is kept so the existing caller in ``runtime/endpoint_selection.py`` is unchanged.
+    """
+    del stored_ids
     if next_endpoint > last_endpoint:
         return REASON_EXHAUSTED
     return None

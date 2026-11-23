@@ -10,12 +10,12 @@ from __future__ import annotations
 
 import copy
 import dataclasses
+import hashlib
 import json
 import unittest
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
-from unittest import mock
 
 from runtime import production_readiness
 from runtime.endpoint_selection import (
@@ -55,30 +55,40 @@ LENS = "synthetic.lens.matter-electrical"
 RULE = PublicationRule(RosterRow(element, "fact", TRANSFORMED) for element in (POWER, CURRENT, THIRD, STATUS))
 
 
-def load_lock() -> dict:
-    """Admission fixtures use the unchanged in-module baseline. The file pin is separate."""
-    return copy.deepcopy(production_readiness.EXPECTED_LOCK)
+SYNTHETIC_MAPPING = {
+    "repository": "https://example.invalid/synthetic-docs-semantic.git",
+    "path": "synthetic/matter-1.6.1-roster.json",
+    "sha256": hashlib.sha256(b"synthetic docs-semantic roster").hexdigest(),
+}
+
+
+def load_lock(mapping: dict | None = SYNTHETIC_MAPPING) -> dict:
+    """The committed go-fabric pin with a synthetic accepted roster pin; the file on disk is never changed."""
+    lock = json.loads(LOCK.read_text(encoding="utf-8"))
+    lock["mapping"] = copy.deepcopy(mapping)
+    return lock
 
 
 def synthetic_composition(lock: dict, profile_id: str = "synthetic-electrical-sensor-profile-a") -> dict:
-    evidence = "synthetic-readiness-input"
     return {
         "schema_version": 1,
         "status": "accepted",
         "profile_id": profile_id,
-        "target_commit": lock["sdk"]["commit"],
+        "module": lock["sdk"]["module"],
+        "release_tag": lock["sdk"]["release_tag"],
+        "checksum": lock["sdk"]["checksum"],
         "mapping": copy.deepcopy(lock["mapping"]),
         "device_type": copy.deepcopy(lock["target"]["device_type"]),
         "clusters": [
-            {"id": "0x001D", "name": "Descriptor", "evidence": evidence},
-            {"id": "0x009C", "name": "Power Topology", "evidence": evidence},
-            {"id": "0x0090", "name": "Electrical Power Measurement", "evidence": evidence},
+            {"id": "0x001D", "name": "Descriptor"},
+            {"id": "0x009C", "name": "Power Topology"},
+            {"id": "0x0090", "name": "Electrical Power Measurement"},
         ],
         "electrical_power_measurement": {
-            "power_mode": {"value": "ac", "evidence": evidence},
-            "number_of_measurement_types": {"value": 1, "evidence": evidence},
-            "accuracy": [{"measurement_type": "active_power", "evidence": evidence}],
-            "active_power": {"value": None, "evidence": evidence},
+            "power_mode": {"value": "ac"},
+            "number_of_measurement_types": {"value": 1},
+            "accuracy": [{"measurement_type": "active_power"}],
+            "active_power": {"value": None},
         },
     }
 
@@ -86,19 +96,18 @@ def synthetic_composition(lock: dict, profile_id: str = "synthetic-electrical-se
 def synthetic_build(lock: dict) -> dict:
     return {
         "schema_version": 1,
-        "sdk_commit": lock["sdk"]["commit"],
-        "targets": {name: "passed" for name in sorted(production_readiness.REQUIRED_BUILD_TARGETS)},
+        "module": lock["sdk"]["module"],
+        "release_tag": lock["sdk"]["release_tag"],
+        "checksum": lock["sdk"]["checksum"],
     }
 
 
 @contextmanager
 def admitted(composition: dict) -> Iterator[dict]:
     """Yield a lock whose in-memory reviewed pin matches the synthetic profile."""
-    digest = production_readiness._composition_digest(composition)
-    lock = load_lock()
-    lock[PIN] = digest
-    with mock.patch.dict(production_readiness.EXPECTED_LOCK, {PIN: digest}):
-        yield lock
+    lock = load_lock(composition["mapping"])
+    lock[PIN] = production_readiness._composition_digest(composition)
+    yield lock
 
 
 class FakeStore:
@@ -184,7 +193,19 @@ class EndpointSelectionTest(unittest.TestCase):
     def stored_records(self, store: FakeStore | None = None) -> list[dict]:
         return json.loads((store or self.store).data[LEDGER_KEY])["records"]
 
-    # Production readiness stays deny-all.
+    def test_eligible_resource_is_allocated_when_evaluate_permits(self) -> None:
+        result = self.reconcile_admitted(self.selector(), report=target_report(offer(POWER, RES_A)))
+        self.assertEqual([(s.state, s.endpoint) for s in result.states], [(ELIGIBLE, 1)])
+        self.assertEqual(len(self.stored_records()), 1)
+
+    def test_mapping_unset_withholds_even_with_a_matching_profile_digest(self) -> None:
+        lock = load_lock(mapping=None)
+        composition = synthetic_composition(lock)
+        lock[PIN] = production_readiness._composition_digest(composition)
+        result = self.selector().reconcile(lock, composition, synthetic_build(lock), target_report(offer(POWER, RES_A)))
+        self.assertEqual(result.states[0].state, WITHHELD)
+        self.assertIn("no reviewed mapping is pinned", result.states[0].reasons)
+        self.assertNotIn(LEDGER_KEY, self.store.writes)
 
     def test_withheld_production_readiness_allocates_nothing(self) -> None:
         for _ in range(2):

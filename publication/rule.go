@@ -9,8 +9,9 @@
 // endpoint. A relation allocates no endpoint.
 //
 // The store keys an endpoint number to a resource id, assigns the lowest free
-// number from one upward, never moves or frees a number and holds at most
-// StoreCapacity ids. A new number is saved as a complete document before it is
+// number from one upward, never moves or frees a number and has no count
+// capacity: a new id is refused only when no number up to the 16-bit endpoint
+// bound is free. A new number is saved as a complete document before it is
 // returned. The package creates no Matter node, endpoint, fabric or
 // commissioning state and is not an admission decision.
 package publication
@@ -44,13 +45,9 @@ const (
 	ReasonExcluded      = "element is on the exclusion list"
 	ReasonRelation      = "a relation allocates no endpoint"
 	ReasonNoDisposition = "element has no disposition"
-	ReasonCapacity      = "endpoint store holds its full capacity of resource ids"
+	ReasonExhausted     = "endpoint number space is exhausted for this node lifecycle"
 	ReasonUnsaved       = "endpoint store could not be saved"
 )
-
-// StoreCapacity is the number of resource ids the store holds for the life of
-// a node. A further new id is refused.
-const StoreCapacity = 64
 
 const (
 	firstEndpoint = 1
@@ -238,8 +235,8 @@ func Load(document []byte) (*Store, error) {
 	if err := decodeStrict(document, &stored); err != nil {
 		return nil, fmt.Errorf("endpoint store: %w", err)
 	}
-	if stored.Endpoints == nil || len(*stored.Endpoints) > StoreCapacity {
-		return nil, fmt.Errorf("endpoint store: %w: missing endpoints or more than its capacity", errMalformed)
+	if stored.Endpoints == nil {
+		return nil, fmt.Errorf("endpoint store: %w: missing endpoints", errMalformed)
 	}
 	store := NewStore()
 	for _, record := range *stored.Endpoints {
@@ -277,9 +274,10 @@ func (s *Store) Document() []byte {
 }
 
 // Assign returns the stored number of every live id and assigns the lowest
-// free number to each new id, in id order, up to StoreCapacity. New numbers
-// are saved before they are returned; when the save fails no new number is
-// kept or returned.
+// free number to each new id, in id order. A new id that finds no free number
+// up to lastEndpoint is refused with ReasonExhausted and never given a number
+// beyond it. New numbers are saved before they are returned; when the save
+// fails no new number is kept or returned.
 func (s *Store) Assign(ids []string, save SaveFunc) Assignment {
 	result := Assignment{Endpoints: map[string]uint16{}, Refused: map[string]string{}}
 	var fresh []string
@@ -288,8 +286,6 @@ func (s *Store) Assign(ids []string, save SaveFunc) Assignment {
 			result.Endpoints[id] = number
 		} else if !token(id) {
 			result.Refused[id] = ReasonResourceID
-		} else if len(s.byID)+len(fresh) >= StoreCapacity {
-			result.Refused[id] = ReasonCapacity
 		} else {
 			fresh = append(fresh, id)
 		}
@@ -303,6 +299,7 @@ func (s *Store) Assign(ids []string, save SaveFunc) Assignment {
 		next[id] = number
 		used[number] = struct{}{}
 	}
+	var assigned []string
 	candidate := uint16(firstEndpoint)
 	for _, id := range fresh {
 		for ; candidate <= lastEndpoint; candidate++ {
@@ -310,16 +307,24 @@ func (s *Store) Assign(ids []string, save SaveFunc) Assignment {
 				break
 			}
 		}
+		if candidate > lastEndpoint {
+			result.Refused[id] = ReasonExhausted
+			continue
+		}
 		next[id] = candidate
 		used[candidate] = struct{}{}
+		assigned = append(assigned, id)
+	}
+	if len(assigned) == 0 {
+		return result
 	}
 	if save == nil || save(encode(next)) != nil {
-		for _, id := range fresh {
+		for _, id := range assigned {
 			result.Refused[id] = ReasonUnsaved
 		}
 		return result
 	}
-	for _, id := range fresh {
+	for _, id := range assigned {
 		s.byID[id] = next[id]
 		s.byNumber[next[id]] = id
 		result.Endpoints[id] = next[id]

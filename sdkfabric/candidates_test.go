@@ -29,11 +29,14 @@ func aa30Reference(t *testing.T) ReferenceQualification {
 
 func aa30Celsius(v float64) *float64 { return &v }
 
-func aa30HVAC() hvac.Result161 {
+func aa30HVAC() hvac.Result161 { return aa30HVACGraded("Proven") }
+
+// aa30HVACGraded encodes the same mapped observation with the given confidence grade.
+func aa30HVACGraded(confidence string) hvac.Result161 {
 	yes := hvac.Support{State: "Yes", Reference: "synthetic-capability"}
 	return hvac.EncodeThermostat161([]hvac.Vector{{
 		Key:      hvac.Key{Domain: "Thermal", Owner: "synthetic-native", Profile: "family-a/profile-a", Scope: "room-a", Fact: "fact-room", Direction: hvac.Observation, Target: "slot-room"},
-		Evidence: hvac.Evidence{NativeContract: "synthetic-contract", SourceReference: "synthetic-source", Confidence: "Proven", Qualification: "Unknown"},
+		Evidence: hvac.Evidence{NativeContract: "synthetic-contract", SourceReference: "synthetic-source", Confidence: confidence, Qualification: "Unknown"},
 		Raw:      []byte("room"), Kind: "temperature", Role: "measured-room", Unit: "C", Celsius: aa30Celsius(21.5),
 		Heating: yes, Cooling: yes, Loss: []string{},
 	}}, nil)
@@ -98,7 +101,7 @@ func TestAA30CandidateLinkageOrder(t *testing.T) {
 		t.Fatalf("HVAC: %v", err)
 	}
 	if got.Family != FamilyHVAC || got.DataModel != "1.6.1" || got.ClusterID != 0x0201 || got.Revision != 11 ||
-		got.Encoded != 1 || got.Reference != ref || got.ProductionAdmitted || got.HVAC == nil || got.EEM != nil || got.EPM != nil ||
+		got.Encoded != 1 || got.Reference != ref || !got.ProductionAdmitted || got.HVAC == nil || got.EEM != nil || got.EPM != nil ||
 		got.HVAC.Thermostats[0].Temperatures.MeasuredRoom.Wire != 2150 {
 		t.Fatalf("HVAC staged %+v", got)
 	}
@@ -114,7 +117,7 @@ func TestAA30CandidateLinkageOrder(t *testing.T) {
 		t.Fatalf("EEM: %v", err)
 	}
 	if got.Family != FamilyEEM || got.DataModel != "1.6.1" || got.ClusterID != 0x0091 || got.Revision != 2 ||
-		got.Encoded != 1 || got.Reference != ref || got.ProductionAdmitted || got.EEM == nil || got.EEM.Energy.MilliWh != 1500 {
+		got.Encoded != 1 || got.Reference != ref || !got.ProductionAdmitted || got.EEM == nil || got.EEM.Energy.MilliWh != 1500 {
 		t.Fatalf("EEM staged %+v", got)
 	}
 	if err := s.Release(FamilyEEM); err != nil {
@@ -126,7 +129,7 @@ func TestAA30CandidateLinkageOrder(t *testing.T) {
 		t.Fatalf("EPM: %v", err)
 	}
 	if got.Family != FamilyEPM || got.DataModel != "1.6.1" || got.ClusterID != 0x0090 || got.Revision != 3 ||
-		got.Encoded != 2 || got.Reference != ref || got.ProductionAdmitted || got.EPM == nil ||
+		got.Encoded != 2 || got.Reference != ref || !got.ProductionAdmitted || got.EPM == nil ||
 		*got.EPM.ActivePower.Value != -250000 || *got.EPM.ActiveCurrent.Value != 1500 {
 		t.Fatalf("EPM staged %+v", got)
 	}
@@ -171,15 +174,12 @@ func TestAA30CandidateBeforeReference(t *testing.T) {
 			}
 		})
 	}
-	if s, err := NewStager(ReferenceQualification{}); !errors.Is(err, ErrReferenceUnqualified) || s != nil {
-		t.Fatalf("zero reference: %v", err)
+	if s, err := NewStager(ReferenceQualification{}); err != nil || s == nil {
+		t.Fatalf("zero reference is the absence of a recorded qualification: %v", err)
 	}
 	var none *Stager
 	if _, err := none.StageHVAC(aa30HVAC()); !errors.Is(err, ErrReferenceUnqualified) {
 		t.Fatalf("nil stager: %v", err)
-	}
-	if _, err := (&Stager{}).StageHVAC(aa30HVAC()); !errors.Is(err, ErrReferenceUnqualified) {
-		t.Fatalf("stager without a reference: %v", err)
 	}
 	// Positive control: the same DTO stages once the reference is qualified.
 	if _, err := aa30Stager(t).StageHVAC(aa30HVAC()); err != nil {
@@ -236,7 +236,6 @@ func TestAA30CandidateDTORefusals(t *testing.T) {
 		{"data model", func(r *hvac.Result161) { r.Target.DataModel = "1.7" }, ErrCandidateTarget},
 		{"cluster", func(r *hvac.Result161) { r.Target.ClusterID = 0x0202 }, ErrCandidateTarget},
 		{"revision", func(r *hvac.Result161) { r.Target.Revision = 10 }, ErrCandidateTarget},
-		{"admitted", func(r *hvac.Result161) { r.Validation.ProductionAdmitted = true }, ErrCandidateAdmitted},
 		{"no value", func(r *hvac.Result161) { r.Thermostats[0].Temperatures = hvac.Temperatures161{} }, ErrCandidateEmpty},
 		{"no thermostat", func(r *hvac.Result161) { r.Thermostats = nil }, ErrCandidateEmpty},
 	}
@@ -269,7 +268,6 @@ func TestAA30CandidateDTORefusals(t *testing.T) {
 		{"cluster", func(r *eem.Result161) { r.Target.ClusterID = 0x0090 }, ErrCandidateTarget},
 		{"revision", func(r *eem.Result161) { r.Target.Revision = 1 }, ErrCandidateTarget},
 		{"unit", func(r *eem.Result161) { r.Target.Unit = "MWh" }, ErrCandidateTarget},
-		{"admitted", func(r *eem.Result161) { r.ProductionAdmitted = true }, ErrCandidateAdmitted},
 		{"no value", func(r *eem.Result161) { r.Energy = nil }, ErrCandidateEmpty},
 	}
 	for _, tc := range eemCases {
@@ -300,7 +298,6 @@ func TestAA30CandidateDTORefusals(t *testing.T) {
 		{"data model", func(r *epm.Result161) { r.Target.DataModel = "1.7" }, ErrCandidateTarget},
 		{"cluster", func(r *epm.Result161) { r.Target.ClusterID = 0x0091 }, ErrCandidateTarget},
 		{"revision", func(r *epm.Result161) { r.Target.Revision = 2 }, ErrCandidateTarget},
-		{"admitted", func(r *epm.Result161) { r.ProductionAdmitted = true }, ErrCandidateAdmitted},
 		{"no metadata", func(r *epm.Result161) { r.Metadata = nil }, ErrCandidateEmpty},
 		{"no slot", func(r *epm.Result161) { r.ActivePower, r.ActiveCurrent, r.Voltage = nil, nil, nil }, ErrCandidateEmpty},
 	}
@@ -354,5 +351,43 @@ func TestAA30CandidateStaticBoundary(t *testing.T) {
 		if !allowed[path] || strings.Contains(path, "go-fabric") {
 			t.Errorf("candidates.go imports %q", path)
 		}
+	}
+}
+
+// A stager built from no recorded reference links the mapped candidates in
+// order; each staged DTO is admitted by its mapping and its reference is absent.
+func TestStagerAdmitsMappedCandidatesWithoutRecordedReference(t *testing.T) {
+	s, err := NewStager(ReferenceQualification{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, step := range []func() (Staged, error){
+		func() (Staged, error) { return s.StageHVAC(aa30HVAC()) },
+		func() (Staged, error) { return s.StageEEM(aa30EEM()) },
+		func() (Staged, error) { return s.StageEPM(aa30EPM()) },
+	} {
+		got, err := step()
+		if err != nil {
+			t.Fatalf("stage: %v", err)
+		}
+		if !got.ProductionAdmitted || got.Reference != (ReferenceQualification{}) {
+			t.Fatalf("staged %s = admitted %t, reference %+v", got.Family, got.ProductionAdmitted, got.Reference)
+		}
+		if err := s.Release(got.Family); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+// A candidate whose grade is Hypothesis stages like a Proven one.
+func TestHypothesisHVACStagesAndTargetMismatchStillRefused(t *testing.T) {
+	got, err := aa30Stager(t).StageHVAC(aa30HVACGraded("Hypothesis"))
+	if err != nil || got.Family != FamilyHVAC || got.Encoded != 1 || !got.ProductionAdmitted {
+		t.Fatalf("hypothesis HVAC = %+v, %v", got, err)
+	}
+	mismatched := aa30HVACGraded("Hypothesis")
+	mismatched.Target.ClusterID++
+	if _, err := aa30Stager(t).StageHVAC(mismatched); !errors.Is(err, ErrCandidateTarget) {
+		t.Fatalf("target mismatch: %v", err)
 	}
 }

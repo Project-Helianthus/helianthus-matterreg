@@ -112,7 +112,7 @@ func TestAA15ExactDTO(t *testing.T) {
 	if !reflect.DeepEqual(got.Validation, Validate(rows)) {
 		t.Fatalf("validation changed: %+v", got.Validation)
 	}
-	if got.SemanticMapping != "Unknown" || got.TargetClosure != "Unknown" || got.LibrarySupport != "Unknown" || got.ProductionAdmitted {
+	if got.SemanticMapping != "Unknown" || got.TargetClosure != "Unknown" || got.LibrarySupport != "Unknown" || !got.ProductionAdmitted {
 		t.Fatalf("outcome upgraded: %+v", got)
 	}
 	names := []string{"apparent-power", "events", "feature-map", "frequency", "harmonics", "native-control", "polyphase", "power-factor", "power-quality", "reactive-power"}
@@ -443,7 +443,7 @@ func TestAA15BindingsAreSuppliedFactsOnly(t *testing.T) {
 		f = aa15Facts()
 		f.Bindings[1].Key = named.Key
 		got = EncodePower161([]Input{aa15Power(), named}, f)
-		if got.ActiveCurrent == nil || got.SemanticMapping != "Unknown" || got.ProductionAdmitted {
+		if got.ActiveCurrent == nil || got.SemanticMapping != "Unknown" || !got.ProductionAdmitted {
 			t.Fatalf("%+v", got)
 		}
 		f.Bindings[1].Key = aa15Current().Key

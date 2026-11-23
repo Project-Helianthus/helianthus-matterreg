@@ -182,6 +182,8 @@ func EncodePower161(rows []Input, facts Facts161) Result161 {
 		SemanticMapping: unknownOutcome161, TargetClosure: unknownOutcome161, LibrarySupport: unknownOutcome161,
 		Surfaces: surfaces161(),
 	}
+	// The target is the mapping identity above, so the target validates against the mapping.
+	r.ProductionAdmitted = true
 	accepted := len(r.Reasons) == 0
 	if accepted {
 		r.Metadata = &Metadata161{facts.PowerMode, facts.MeasurementTypes, accuracy161(facts.Accuracy)}

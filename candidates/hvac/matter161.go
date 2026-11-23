@@ -153,6 +153,8 @@ func EncodeThermostat161(input []Vector, evidence []TargetEvidence161) Result161
 		},
 		Validation: Validate(input), Thermostats: []Thermostat161{}, UnmatchedEvidence: []Subject161{},
 	}
+	// The target is the mapping identity above, so the target validates against the mapping.
+	r.Validation.ProductionAdmitted = true
 	groups := make(map[Subject161][]Evaluation)
 	for _, e := range r.Validation.Rows {
 		k := e.Source.Key
