@@ -228,7 +228,7 @@ job and does not keep a second job.
 
 | Owner change | Current consumer | What the change must handle |
 | --- | --- | --- |
-| `sdk/matter-sdk.lock.json` records the module pin | `tools/validate_lock.py` checks it against `go.mod` and the zip checksum in `go.sum` | The admission module is a separate comparison and is unchanged. |
+| `sdk/matter-sdk.lock.json` records the module pin | `tools/validate_lock.py` checks it against `go.mod` and the zip checksum in `go.sum` | The admission module compares the lock's module, release tag and checksum with the committed pin, and its provider and Matter 1.6.1 model; it is migrated with the go-fabric pin (next row). |
 | Keep `go.mod` and `go.sum` at the repository root | Both files exist. `go.mod` requires go-fabric `v0.25.0` with Go `1.27.4`. Tagged packages under `sdkfabric/` import that module. | The lock change must keep the module path `github.com/Project-Helianthus/helianthus-matterreg` and must not retarget or remove the installed requirement. Whether a `GO111MODULE=off` command still applies stays a Hypothesis. |
 | Migrate `runtime/production_readiness.py` | Imported by `runtime/endpoint_selection.py`, `runtime/adoption_baseline.py` and the test modules below. Done for the go-fabric pin: `EXPECTED_LOCK`, the C++ build target list and the commit comparison are removed. | The evaluator rules below apply. |
 | `tools/validate_lock.py` checks the module pin | `.github/workflows/sdk-baseline.yml` runs it. `validate_workflow_pins` is unchanged. | Checkout and mapping-file options are not part of the checker. |

@@ -719,8 +719,9 @@ func (h *ReferenceHost) ChangeTopology(request TopologyRequest) error {
 	return nil
 }
 
-// evaluate returns the value and, when it must be null, why. Absent, stale,
-// unqualified or unproven input is withheld; malformed input is also an error.
+// evaluate returns the value and, when it must be null, why. Absent or stale
+// input is withheld; the confidence grade does not withhold a fresh value, and
+// malformed input is also an error.
 func evaluate(o CurrentObservation, sensor Identity) (value int64, withheld string, err error) {
 	if o.Fact != CurrentFactID {
 		return 0, "invalid-fact", fmt.Errorf("%w: %q", ErrProjectionFact, o.Fact)

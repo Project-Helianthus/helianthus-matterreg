@@ -67,15 +67,21 @@ def validate_lock(lock: Any) -> tuple[str, ...]:
         return ("lock is not an object",)
     reasons: list[str] = []
     committed = committed_lock()
+    if type(lock.get("schema_version")) is not int or lock["schema_version"] != 1:
+        reasons.append("lock schema is unsupported")
     sdk = lock.get("sdk")
     if not isinstance(sdk, dict) or any(sdk.get(field) != committed["sdk"][field] for field in SDK_PIN_FIELDS):
         reasons.append("lock differs from the committed go-fabric pin")
+    elif sdk.get("provider") != "go-fabric" or sdk.get("model") != {"name": "Matter", "version": "1.6.1"}:
+        reasons.append("lock provider and data model must be go-fabric Matter 1.6.1")
     if lock.get("target") != committed["target"]:
         reasons.append("lock target differs from the committed target")
+    if "mapping" not in lock or "accepted_runtime_composition_profile_sha256" not in lock:
+        reasons.append("lock must carry the mapping and accepted runtime-composition profile pins")
     mapping = lock.get("mapping")
     if mapping is not None and (not isinstance(mapping, dict) or set(mapping) != MAPPING_FIELDS):
         reasons.append("mapping must be unset or carry exactly repository, path and sha256")
-    elif mapping is not None and not _is_digest(mapping["sha256"]):
+    elif isinstance(mapping, dict) and not _is_digest(mapping.get("sha256")):
         reasons.append("mapping sha256 must be a sha256 digest")
     profile = lock.get("accepted_runtime_composition_profile_sha256")
     if profile is not None and not _is_digest(profile):

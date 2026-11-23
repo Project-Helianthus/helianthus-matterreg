@@ -207,6 +207,24 @@ class EndpointSelectionTest(unittest.TestCase):
         self.assertIn("no reviewed mapping is pinned", result.states[0].reasons)
         self.assertNotIn(LEDGER_KEY, self.store.writes)
 
+    def test_lock_without_profile_pin_key_withholds_instead_of_raising(self) -> None:
+        lock = load_lock()
+        composition = synthetic_composition(lock)
+        del lock[PIN]
+        result = self.selector().reconcile(lock, composition, synthetic_build(lock), target_report(offer(POWER, RES_A)))
+        self.assertEqual(result.states[0].state, WITHHELD)
+        self.assertTrue(result.states[0].reasons)
+        self.assertNotIn(LEDGER_KEY, self.store.writes)
+
+    def test_lock_with_another_model_withholds_even_with_matching_pins(self) -> None:
+        lock = load_lock()
+        composition = synthetic_composition(lock)
+        lock["sdk"]["model"] = {"name": "Matter", "version": "1.7"}
+        lock[PIN] = production_readiness._composition_digest(composition)
+        result = self.selector().reconcile(lock, composition, synthetic_build(lock), target_report(offer(POWER, RES_A)))
+        self.assertEqual(result.states[0].state, WITHHELD)
+        self.assertNotIn(LEDGER_KEY, self.store.writes)
+
     def test_withheld_production_readiness_allocates_nothing(self) -> None:
         for _ in range(2):
             result = self.selector().reconcile(self.lock, self.composition, self.build, self.report)

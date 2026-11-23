@@ -12,8 +12,8 @@ import (
 )
 
 // This file imports no SDK package: it links already encoded candidate DTOs to
-// the qualified reference only. It adds no encoding, serves no cluster and
-// admits nothing to production.
+// the reference only. It adds no encoding, serves no cluster, and sets
+// ProductionAdmitted only after the mapping and data checks in the stager.
 
 var (
 	ErrReferenceUnqualified = errors.New("sdkfabric: the mandatory reference is not qualified")

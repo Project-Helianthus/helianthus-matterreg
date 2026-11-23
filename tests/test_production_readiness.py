@@ -157,6 +157,34 @@ class ProductionReadinessTest(unittest.TestCase):
         disk = committed_lock()
         self.assertFalse(evaluate(disk, self.composition, self.build).permitted)
 
+    def test_schema_provider_or_model_drift_withholds_permission(self) -> None:
+        drifts = (
+            ("schema_version", 2),
+            ("sdk.provider", "other"),
+            ("sdk.model", {"name": "Matter", "version": "1.7"}),
+        )
+        for key, value in drifts:
+            with self.subTest(key=key):
+                lock = pinned(self.lock, self.composition)
+                if key.startswith("sdk."):
+                    lock["sdk"][key.split(".", 1)[1]] = value
+                else:
+                    lock[key] = value
+                self.assertTrue(validate_lock(lock))
+                decision = evaluate(lock, self.composition, self.build)
+                self.assertFalse(decision.permitted)
+                self.assertTrue(decision.reasons)
+
+    def test_missing_profile_or_mapping_key_is_a_denial_not_an_error(self) -> None:
+        for key in ("accepted_runtime_composition_profile_sha256", "mapping"):
+            with self.subTest(key=key):
+                lock = pinned(self.lock, self.composition)
+                del lock[key]
+                self.assertTrue(validate_lock(lock))
+                decision = evaluate(lock, self.composition, self.build)
+                self.assertFalse(decision.permitted)
+                self.assertTrue(decision.reasons)
+
     def test_mismatched_attribute_identifier_cannot_enable_the_gate(self) -> None:
         lock = copy.deepcopy(self.lock)
         lock["target"]["active_current_attribute"]["id"] = "0x0006"

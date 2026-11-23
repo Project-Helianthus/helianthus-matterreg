@@ -133,8 +133,9 @@ type Thermostat161 struct {
 }
 
 // Result161 keeps the unmodified Validate output, including rows that never join
-// a thermostat. Its Unknown outcomes and false admission are not changed by any
-// encoding; a populated slot means only that supplied assertions were encodable.
+// a thermostat. Its Unknown outcomes are not changed by any encoding, and
+// ProductionAdmitted records only that the target is the mapping identity; a
+// populated slot means only that supplied assertions were encodable.
 type Result161 struct {
 	Target            Target161
 	Validation        Result

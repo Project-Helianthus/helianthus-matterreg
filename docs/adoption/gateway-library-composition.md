@@ -159,8 +159,8 @@ Fixture budgets and fake-sink acknowledgements are not library resource limits
 or proof of controller receipt.
 
 Endpoint identity and selection persistence follow the Portal lifecycle contract
-and the endpoint ledger. Endpoint numbers are stable and are never reused; the
-ledger has no resource-count cap, and the only maximum is the 16-bit endpoint
+and the endpoint store. Endpoint numbers are stable and are never reused; the
+store has no resource-count cap, and the only maximum is the 16-bit endpoint
 id. Do not fabricate identity or fabric material from selection, cached values or
 fixture tokens. Corrupt or ambiguous restoration withholds affected publication
 while retaining valid unaffected records. No automatic commissioning or rejoin
