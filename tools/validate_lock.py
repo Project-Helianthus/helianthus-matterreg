@@ -25,6 +25,8 @@ TARGET_FIELDS = frozenset({
     "electrical_power_measurement_cluster",
     "active_current_attribute",
 })
+MAPPING_FIELDS = frozenset({"repository", "path", "sha256"})
+DIGEST = re.compile(r"[0-9a-f]{64}")
 EXPECTED_TARGET = {
     "device_type": {"name": "Electrical Sensor", "id": "0x0510", "revision": 1},
     "power_topology_cluster": {"name": "Power Topology", "id": "0x009C", "revision": 1},
@@ -58,13 +60,18 @@ def recorded_checksum(text: str, module: str, version: str) -> str | None:
 
 
 def pin_constant_reasons(lock: dict) -> list[str]:
+    """Shape of the optional roster and composition pins; the committed staging lock leaves both null."""
     reasons: list[str] = []
     if type(lock["schema_version"]) is not int or lock["schema_version"] != 1:
         reasons.append("lock schema is unsupported")
-    if lock["accepted_runtime_composition_profile_sha256"] is not None:
-        reasons.append("accepted runtime composition profile pin must stay unset")
-    if lock["mapping"] is not None:
-        reasons.append("mapping must stay unset")
+    profile = lock["accepted_runtime_composition_profile_sha256"]
+    if profile is not None and not (isinstance(profile, str) and DIGEST.fullmatch(profile)):
+        reasons.append("accepted runtime composition profile pin must be unset or a sha256 digest")
+    mapping = lock["mapping"]
+    if mapping is not None and (not isinstance(mapping, dict) or set(mapping) != MAPPING_FIELDS):
+        reasons.append("mapping must be unset or carry exactly repository, path and sha256")
+    if isinstance(mapping, dict) and not (isinstance(mapping.get("sha256"), str) and DIGEST.fullmatch(mapping["sha256"])):
+        reasons.append("mapping sha256 must be a sha256 digest")
     return reasons
 
 

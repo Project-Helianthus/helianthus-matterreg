@@ -58,7 +58,7 @@ This template executes no SDK or controller, accesses no device and authorizes
 no live write, deployment or fabric operation. Synthetic/public fixtures and
 in-memory loopback are the bounded offline scope. Independent-controller evidence,
 platform execution, physical acceptance, interoperability, conformance and
-certification remain separate. Production admission stays fail closed. No new
+certification remain separate. Production admission is declared from the specification mapping and the pinned accepted composition profile; a notice or licence record is not an input to it. No new
 namespace or authorization gate is introduced before 0.9; roadmap wording remains
 0.11. Protocol facts require their public native documentation contract first;
 eBUS MCP compatibility and GraphQL parity are unchanged.

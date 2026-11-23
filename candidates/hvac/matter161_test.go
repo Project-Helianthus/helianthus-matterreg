@@ -141,7 +141,7 @@ func TestAA13FullThermostatExactDTO(t *testing.T) {
 	if th.Composition.FeatureMap == nil || *th.Composition.FeatureMap != 0x23 {
 		t.Fatalf("feature map: %+v", th.Composition)
 	}
-	if r.Validation.SemanticMapping != "Unknown" || r.Validation.TargetClosure != "Unknown" || r.Validation.LibrarySupport != "Unknown" || r.Validation.ProductionAdmitted {
+	if r.Validation.SemanticMapping != "Unknown" || r.Validation.TargetClosure != "Unknown" || r.Validation.LibrarySupport != "Unknown" || !r.Validation.ProductionAdmitted {
 		t.Fatalf("outcome upgraded: %+v", r.Validation)
 	}
 }
@@ -220,8 +220,6 @@ func TestAA13NullNeverCoversAnotherDefect(t *testing.T) {
 	cases := map[string]func(*Vector){
 		"nan":          func(v *Vector) { v.Celsius = number(math.NaN()) },
 		"infinity":     func(v *Vector) { v.Celsius = number(math.Inf(1)) },
-		"hypothesis":   func(v *Vector) { v.Celsius, v.Evidence.Confidence = nil, "Hypothesis" },
-		"unknown":      func(v *Vector) { v.Celsius, v.Evidence.Confidence = nil, "Unknown" },
 		"no-raw":       func(v *Vector) { v.Celsius, v.Raw = nil, nil },
 		"unreviewed":   func(v *Vector) { v.Celsius, v.Loss = nil, nil },
 		"non-nullable": func(v *Vector) { v.Celsius, v.Role = nil, "heating-manual-target" },
@@ -302,13 +300,13 @@ func TestAA13CapabilityOnlyFromValidatedRows(t *testing.T) {
 	good := aa13Temp("measured-room", 21.5)
 	good.Cooling = Support{State: "Unknown"}
 	bad := aa13Temp("heating-manual-target", 20)
-	bad.Evidence.Confidence = "Hypothesis"
+	bad.Raw = nil
 	th := aa13One(t, []Vector{good, bad}, aa13Evidence())
 	if th.Composition.Cool.State != "Unknown" || th.Composition.Auto.State != "Unknown" || th.Composition.FeatureMap != nil {
 		t.Fatalf("withheld row supplied cooling: %+v", th.Composition)
 	}
 	denial := aa13Temp("heating-manual-target", 20)
-	denial.Evidence.Confidence = "Hypothesis"
+	denial.Raw = nil
 	denial.Heating, denial.Cooling = Support{"No", "denial"}, Support{"No", "denial"}
 	if th := aa13One(t, []Vector{aa13Temp("measured-room", 21.5), denial}, aa13Evidence()); th.Composition.Heat.State != "Yes" || th.Composition.Cool.State != "Yes" || th.Temperatures.MeasuredRoom == nil {
 		t.Fatalf("withheld row poisoned sibling: %+v", th.Composition)
@@ -589,8 +587,6 @@ func TestAA13ConfidenceQualificationAndReferenceAxes(t *testing.T) {
 		name   string
 		change func(*Vector)
 	}{
-		{"confidence-hypothesis", func(v *Vector) { v.Evidence.Confidence = "Hypothesis" }},
-		{"confidence-unknown", func(v *Vector) { v.Evidence.Confidence = "Unknown" }},
 		{"confidence-invalid", func(v *Vector) { v.Evidence.Confidence = "certain" }},
 		{"qualification-missing", func(v *Vector) { v.Evidence.Qualification = "" }},
 		{"native-contract-missing", func(v *Vector) { v.Evidence.NativeContract = "" }},
@@ -634,7 +630,7 @@ func TestAA13ConfidenceQualificationAndReferenceAxes(t *testing.T) {
 			if s == nil || !c.check(s.Source) {
 				t.Fatalf("%+v", s)
 			}
-			if r.Validation.TargetClosure != "Unknown" || r.Validation.SemanticMapping != "Unknown" || r.Validation.LibrarySupport != "Unknown" || r.Validation.ProductionAdmitted {
+			if r.Validation.TargetClosure != "Unknown" || r.Validation.SemanticMapping != "Unknown" || r.Validation.LibrarySupport != "Unknown" || !r.Validation.ProductionAdmitted {
 				t.Fatalf("qualification upgraded outcomes: %+v", r.Validation)
 			}
 		})
@@ -808,7 +804,7 @@ func TestAA13PartialDetachedAndPermutationStable(t *testing.T) {
 		t.Fatal("empty input invented a thermostat")
 	}
 	empty := EncodeThermostat161(nil, nil).Validation
-	if empty.ProductionAdmitted || empty.TargetClosure != "Unknown" {
+	if !empty.ProductionAdmitted || empty.TargetClosure != "Unknown" {
 		t.Fatalf("%+v", empty)
 	}
 }

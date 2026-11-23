@@ -20,7 +20,6 @@ from runtime.production_readiness import Decision
 from runtime.publication_rule import (
     EXCLUSIONS_PATH,
     KIND_RELATION,
-    REASON_CAPACITY,
     REASON_EXCLUDED,
     REASON_EXHAUSTED,
     REASON_NO_DISPOSITION,
@@ -28,7 +27,6 @@ from runtime.publication_rule import (
     REASON_RESOURCE_ID,
     REASON_UNMAPPED,
     REASON_UNRECOGNISED,
-    STORE_CAPACITY,
     TRANSFORMED,
     UNKNOWN,
     UNSUPPORTED,
@@ -211,19 +209,17 @@ class PublicationRuleTest(unittest.TestCase):
             "ReasonExcluded": REASON_EXCLUDED,
             "ReasonRelation": REASON_RELATION,
             "ReasonNoDisposition": REASON_NO_DISPOSITION,
-            "ReasonCapacity": REASON_CAPACITY,
+            "ReasonExhausted": REASON_EXHAUSTED,
         }
         for name, reason in python.items():
             with self.subTest(name):
                 self.assertEqual(constants.get(name), reason)
         self.assertIn(f'"{REASON_UNRECOGNISED}"', source)
-        self.assertIn(f"const StoreCapacity = {STORE_CAPACITY}\n", source)
+        self.assertNotIn("StoreCapacity", source)
 
-    def test_capacity_name_has_no_digit_and_refuses_beyond_it(self) -> None:
-        self.assertIsNone(re.search(r"\d", "STORE_CAPACITY"))
-        self.assertEqual(STORE_CAPACITY, 64)
-        self.assertIsNone(allocation_refusal(STORE_CAPACITY - 1, 1, 0xFFFE))
-        self.assertEqual(allocation_refusal(STORE_CAPACITY, 1, 0xFFFE), REASON_CAPACITY)
+    def test_number_space_is_the_only_bound_and_refuses_past_the_last_number(self) -> None:
+        self.assertIsNone(allocation_refusal(0, 1, 0xFFFE))
+        self.assertIsNone(allocation_refusal(70, 0xFFFE, 0xFFFE))
         self.assertEqual(allocation_refusal(0, 0xFFFF, 0xFFFE), REASON_EXHAUSTED)
 
 
@@ -272,29 +268,29 @@ class SelectorAppliesTheRuleTest(unittest.TestCase):
         self.assertEqual(self.store.writes, [])
 
     def test_production_evaluator_still_withholds_every_resource(self) -> None:
-        lock = copy.deepcopy(production_readiness.EXPECTED_LOCK)
+        lock = json.loads((ROOT / "sdk" / "matter-sdk.lock.json").read_text(encoding="utf-8"))
         result = EndpointSelector(self.store, NODE, rule=self.rule).reconcile(lock, COMPOSITION, None, report(offer(CURRENT, RES_A), offer(POWER, RES_B)))
         self.assertEqual([state.state for state in result.states], [WITHHELD, WITHHELD])
         for state in result.states:
             self.assertIn("no reviewed accepted runtime-composition profile is pinned", state.reasons)
         self.assertEqual(self.store.writes, [])
 
-    def test_a_new_resource_beyond_the_capacity_is_withheld(self) -> None:
-        self.store.data[LEDGER_KEY] = ledger(STORE_CAPACITY - 1)
-        live = report(offer(CURRENT, "synthetic-resource-001"), offer(CURRENT, RES_A), offer(CURRENT, RES_B))
+    def test_more_than_sixty_four_resources_get_distinct_stable_numbers(self) -> None:
+        self.store.data[LEDGER_KEY] = ledger(70)
+        live = report(offer(CURRENT, RES_B), offer(CURRENT, RES_A), offer(CURRENT, "synthetic-resource-001"))
         result = self.selector().reconcile(None, COMPOSITION, None, live)
         self.assertEqual(
             outcome(result),
             [
                 (CURRENT, "synthetic-resource-001", ELIGIBLE, 1, ()),
-                (CURRENT, RES_A, ELIGIBLE, STORE_CAPACITY, ()),
-                (CURRENT, RES_B, WITHHELD, None, (REASON_CAPACITY,)),
+                (CURRENT, RES_A, ELIGIBLE, 71, ()),
+                (CURRENT, RES_B, ELIGIBLE, 72, ()),
             ],
         )
         persisted = self.store.data[LEDGER_KEY]
-        self.assertEqual(len(json.loads(persisted)["records"]), STORE_CAPACITY)
-        again = self.selector().reconcile(None, COMPOSITION, None, report(offer(CURRENT, RES_B), offer(CURRENT, RES_A)))
-        self.assertEqual(outcome(again), [(CURRENT, RES_A, ELIGIBLE, STORE_CAPACITY, ()), (CURRENT, RES_B, WITHHELD, None, (REASON_CAPACITY,))])
+        self.assertEqual(len(json.loads(persisted)["records"]), 72)
+        again = self.selector().reconcile(None, COMPOSITION, None, report(offer(CURRENT, RES_A), offer(CURRENT, RES_B)))
+        self.assertEqual(outcome(again), [(CURRENT, RES_A, ELIGIBLE, 71, ()), (CURRENT, RES_B, ELIGIBLE, 72, ())])
         self.assertEqual(self.store.data[LEDGER_KEY], persisted)
 
 

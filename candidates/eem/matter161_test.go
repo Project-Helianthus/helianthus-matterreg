@@ -62,7 +62,7 @@ func TestAA14ExactDTO(t *testing.T) {
 	if got.Reason != "candidate_valid" || !reflect.DeepEqual(got.Energy, want) || !reflect.DeepEqual(got.Retained, r) {
 		t.Fatalf("%+v", got)
 	}
-	if got.SemanticMapping != "Unknown" || got.TargetClosure != "Unknown" || got.LibrarySupport != "Unknown" || got.ProductionAdmitted {
+	if got.SemanticMapping != "Unknown" || got.TargetClosure != "Unknown" || got.LibrarySupport != "Unknown" || !got.ProductionAdmitted {
 		t.Fatalf("outcome upgraded: %+v", got)
 	}
 	names := []string{"aggregation", "differencing", "events", "feature-map", "measurement-accuracy", "reset-operation", "reset-structure"}

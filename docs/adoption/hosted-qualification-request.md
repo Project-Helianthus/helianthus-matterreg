@@ -370,9 +370,11 @@ change, so that repository checks are not lost in the replacement.
 A complete run could support Proven only for its exact observed claims and tuples. It
 would not establish a supported platform, interoperability, Matter conformance or
 certification, Pi performance or latency, and no such claim exists today. It cannot
-admit a production endpoint: the
-[readiness evaluator](../../runtime/production_readiness.py) still denies allocation
-because the reviewed lock has no accepted composition profile.
+admit a production endpoint on its own: the
+[readiness evaluator](../../runtime/production_readiness.py) permits allocation only
+with the pinned mapping, the accepted composition profile and a matching go-fabric
+build record. A hosted run is a recorded level; the committed lock has no profile
+or mapping pin yet, so the evaluator permits nothing.
 
 All fixtures are synthetic or public. The legs use no real device, real fabric, live
 Gateway operation, deployment or upstream submission, and this request adds no

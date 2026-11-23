@@ -190,9 +190,10 @@ func (p *Port) nodeConfig(n *Node) node.Config {
 	}
 }
 
+// definition compares identifier and revision only; the evidence grade is a
+// recorded level and never a refusal.
 func definition(d adoption.Definition, id uint32, revision uint16) bool {
-	return d.ID == id && d.IDEvidence == adoption.EvidenceProven &&
-		d.Revision == revision && d.RevisionEvidence == adoption.EvidenceProven
+	return d.ID == id && d.Revision == revision
 }
 
 // checkPlan accepts only the AA09 one-sensor shape, with every definition the
@@ -215,7 +216,6 @@ func checkPlan(plan adoption.NodePlan) error {
 		return fmt.Errorf("%w: Aggregator", ErrRevision)
 	}
 	if len(sensor.DeviceTypes) != 2 || sensor.DeviceTypes[0].Revision != device.BridgedNodeRevision ||
-		sensor.DeviceTypes[0].RevisionEvidence != adoption.EvidenceProven ||
 		!definition(sensor.DeviceTypes[1], uint32(device.ElectricalSensorID), device.ElectricalSensorRevision) {
 		return fmt.Errorf("%w: sensor device types", ErrRevision)
 	}

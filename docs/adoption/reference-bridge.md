@@ -11,10 +11,13 @@ Nothing here is stable before Helianthus 1.0.
 Helianthus adopts [go-fabric](https://github.com/thingfabric/go-fabric) as its Matter
 SDK direction, using its Matter 1.6.1 data model. The selection does not qualify
 an adapter or any target. Matter 1.7-only elements are deferred within the
-pre-1.0 cycle. The checked-in [lock](../../sdk/matter-sdk.lock.json) and
-[SDK baseline](../SDK_BASELINE.md) still describe the earlier connectedhomeip
-fixture and its 1.7 targets; they are not a go-fabric lock or evidence of 1.6.1
-target closure. This documentation does not change pins or grant admission.
+pre-1.0 cycle. The checked-in [lock](../../sdk/matter-sdk.lock.json) pins the
+go-fabric module, release tag and zip checksum; the 0.7 Matter bridge ships with
+[development attestation](attestation.md), uncertified. The lock's mapping and
+accepted composition profile pins stay `null` until the first complete endpoint
+writes them. The [SDK baseline](../SDK_BASELINE.md) describes the earlier
+connectedhomeip fixture as history. This documentation changes no pin and grants
+no admission.
 
 **Proven:** the existing local source defines separate synthetic commissioning,
 report and store mechanics. Focused executions prove only the exercised mechanic.
@@ -134,10 +137,12 @@ means no hidden retry loop. The in-memory fixture proves no disk durability or
 cross-process recovery.
 
 Run a separate control through the actual [readiness evaluator](../../runtime/production_readiness.py)
-with accepted-looking metadata and an allocation spy. The current lock has no
-accepted composition-profile digest: zero production allocation is mandatory
-even if every isolated mechanic succeeds. A structural fake allocation counter
-cannot replace this evaluator-boundary control.
+with an allocation spy. Admission is from the specification mapping and the pinned
+accepted composition profile, with the go-fabric module, release tag and checksum
+matching the lock. The committed lock has no profile pin, so the evaluator permits
+nothing and the spy is not called. A bench, hosted or fixture run is a recorded
+level and blocks nothing. A structural fake allocation counter cannot replace this
+evaluator-boundary control.
 
 ## Candidate factory validation matrix and execution order
 

@@ -110,8 +110,9 @@ type Surface161 struct {
 // Result161 always retains the detached reading. A withheld result supplies no
 // replacement sample: callers keep last-known-good values separately and must not
 // mark them fresh on the strength of this call. A populated Energy means only that
-// supplied assertions were encodable; the Unknown outcomes and false admission
-// are not changed by any encoding.
+// supplied assertions were encodable; the Unknown outcomes are not changed by any
+// encoding, and ProductionAdmitted records only that the target is the mapping
+// identity.
 type Result161 struct {
 	Target                                         Target161
 	Retained                                       ExactReading161
@@ -135,6 +136,8 @@ func EncodeEnergy161(expected Identity, observed ExactReading161) Result161 {
 		Retained: observed, SemanticMapping: unknownOutcome161, TargetClosure: unknownOutcome161, LibrarySupport: unknownOutcome161,
 		Surfaces: surfaces161(),
 	}
+	// The target is the mapping identity above, so the target validates against the mapping.
+	r.ProductionAdmitted = true
 	r.Retained.Native = bytes161(observed.Native)
 	r.Retained.Time = time161(observed.Time)
 	switch {

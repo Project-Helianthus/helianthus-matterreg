@@ -129,8 +129,6 @@ func TestMalformedEvidenceAndValues(t *testing.T) {
 		{"source-reference", "incomplete native evidence", func(v *Vector) { v.Evidence.SourceReference = "" }},
 		{"qualification", "incomplete native evidence", func(v *Vector) { v.Evidence.Qualification = "" }},
 		{"confidence-enum", "incomplete native evidence", func(v *Vector) { v.Evidence.Confidence = "certain" }},
-		{"confidence-unknown", "source confidence is not Proven", func(v *Vector) { v.Evidence.Confidence = "Unknown" }},
-		{"confidence-hypothesis", "source confidence is not Proven", func(v *Vector) { v.Evidence.Confidence = "Hypothesis" }},
 		{"raw", "incomplete native evidence", func(v *Vector) { v.Raw = nil }},
 		{"loss-unreviewed", "unreviewed source loss", func(v *Vector) { v.Loss = nil }},
 		{"loss-blank", "unreviewed source loss", func(v *Vector) { v.Loss = []string{" "} }},
@@ -389,5 +387,21 @@ func TestEmptyCannotAdmitOrClose(t *testing.T) {
 	r := Validate(nil)
 	if len(r.Rows) != 0 || r.ProductionAdmitted || r.SemanticMapping != "Unknown" || r.TargetClosure != "Unknown" || r.LibrarySupport != "Unknown" {
 		t.Fatal(r)
+	}
+}
+
+// The confidence grade is recorded on the row and never denies an otherwise
+// valid observation; each grade yields the same candidate projection.
+func TestConfidenceGradeIsRecordedAndNeverDenies(t *testing.T) {
+	for _, grade := range []string{"Proven", "Hypothesis", "Unknown"} {
+		t.Run(grade, func(t *testing.T) {
+			v := temperature()
+			v.Evidence.Confidence = grade
+			r := Validate([]Vector{v})
+			row := r.Rows[0]
+			if len(row.Withheld) != 0 || row.Candidate == nil || row.Source.Evidence.Confidence != grade {
+				t.Fatalf("grade %s: withheld %v, candidate %+v", grade, row.Withheld, row.Candidate)
+			}
+		})
 	}
 }

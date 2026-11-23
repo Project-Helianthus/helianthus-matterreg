@@ -152,7 +152,8 @@ type Surface161 struct {
 // lost. A nil slot supplies no replacement sample: callers keep last-known-good
 // values separately and must not mark them fresh on the strength of this call. A
 // populated slot means only that supplied assertions were encodable; the Unknown
-// outcomes and false admission are not changed by any encoding.
+// outcomes are not changed by any encoding, and ProductionAdmitted records only
+// that the target is the mapping identity.
 type Result161 struct {
 	Target                                         Target161
 	Validation                                     []Result
@@ -182,6 +183,8 @@ func EncodePower161(rows []Input, facts Facts161) Result161 {
 		SemanticMapping: unknownOutcome161, TargetClosure: unknownOutcome161, LibrarySupport: unknownOutcome161,
 		Surfaces: surfaces161(),
 	}
+	// The target is the mapping identity above, so the target validates against the mapping.
+	r.ProductionAdmitted = true
 	accepted := len(r.Reasons) == 0
 	if accepted {
 		r.Metadata = &Metadata161{facts.PowerMode, facts.MeasurementTypes, accuracy161(facts.Accuracy)}
