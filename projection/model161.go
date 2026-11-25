@@ -17,7 +17,7 @@ const (
 	TargetVersion161              semreg.VersionLabel = "1.6.1"
 	MappingRevision161            semreg.Uint64       = "1"
 	DocsSemanticContractPath161                       = "api/v1/targets/matter-1.6.1-v1.json"
-	DocsSemanticContractSHA256161                     = "c4d4afabdd5daf69ff8350c0531f50901363fa9549eb26e7d43a5cb80780e617"
+	DocsSemanticContractSHA256161                     = "395f12b0c6c40654c0254f061e7f7079e9c2b6768e4c446eb3690e5251f753dc"
 )
 
 // Model161 identifies the inspected model composition, independently of the
