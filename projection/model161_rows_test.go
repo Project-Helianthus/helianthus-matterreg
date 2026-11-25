@@ -1,6 +1,7 @@
 package projection
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/composition"
@@ -90,10 +91,15 @@ func TestProfileRefusesUnknownEncoderAndPack(t *testing.T) {
 		t.Fatal("accepted an unknown encoder")
 	}
 	profile = loadedPilot(t)
-	profile.Attributes[currentRowIndex(t, profile)].PackID = "synthetic.pack"
-	if got, err := projectLoadedProfile(profile, f.snapshot, f.evaluation); err == nil && got.Attributes != nil {
-		if a := profileAttribute(t, got, "ActiveCurrent"); a.Value == "3200" {
-			t.Fatal("accepted a pack with no validator")
-		}
+	const unknownPack = "synthetic.pack"
+	profile.Attributes[currentRowIndex(t, profile)].PackID = unknownPack
+	// Make both keys match the unknown pack in a valid, evaluated snapshot.
+	fact := &f.snapshot.Facts[0]
+	fact.Key.PackID = unknownPack
+	fact.Candidates[0].Key.PackID = unknownPack
+	sealSnapshot(t, &f.snapshot)
+	f.evaluation = evaluateMatterSnapshot(t, f.snapshot)
+	if _, err := projectLoadedProfile(profile, f.snapshot, f.evaluation); err == nil || !strings.Contains(err.Error(), "pack "+unknownPack+" has no validator") {
+		t.Fatalf("expected missing pack validator error, got %v", err)
 	}
 }
