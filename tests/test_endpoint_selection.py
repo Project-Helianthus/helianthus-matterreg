@@ -231,13 +231,16 @@ class EndpointSelectionTest(unittest.TestCase):
             self.assertEqual([s.element for s in result.states], sorted([POWER, CURRENT, THIRD]))
             for state in result.states:
                 self.assertEqual(state.state, WITHHELD)
-                self.assertIn("no reviewed accepted runtime-composition profile is pinned", state.reasons)
+                self.assertIn("runtime-composition profile differs from the reviewed pinned profile", state.reasons)
                 self.assertEqual((state.endpoint, state.parent_endpoint), (None, None))
         self.assertNotIn(LEDGER_KEY, self.store.data)
         self.assertNotIn(LEDGER_KEY, self.store.writes)
         disk = json.loads(LOCK.read_text(encoding="utf-8"))
-        self.assertIsNone(disk[PIN])
-        self.assertFalse(production_readiness.evaluate(disk, self.composition, self.build).permitted)
+        profile = json.loads((ROOT / "targets" / "pilot" / "profile.json").read_text(encoding="utf-8"))
+        self.assertEqual(disk[PIN], production_readiness._composition_digest(profile))
+        decision = production_readiness.evaluate(disk, self.composition, self.build)
+        self.assertFalse(decision.permitted)
+        self.assertIn("runtime-composition profile differs from the reviewed pinned profile", decision.reasons)
 
     def test_absent_or_mismatched_inputs_stay_withheld_even_with_an_admitted_pin(self) -> None:
         selector = self.selector()

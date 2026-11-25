@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"sort"
 	"testing"
 
 	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
@@ -580,10 +579,11 @@ func readRoster161(root, path, digest string) (roster161, error) {
 }
 
 // checkRoster161 compares the adopted roster with the 1.6.1 manifest and the
-// shared ledger. Fact, capability and operation rows are the projected kinds and
-// must equal the ledger; service and relation rows are composed by the endpoint
-// work of the Matter binding and are counted but not projected here. Any other
-// row kind is refused.
+// shared ledger. Every manifest pack must be pinned at the manifest version.
+// Further pack pins and further fact, capability and operation rows are kept.
+// The ledger rows must be present. The only transformed fact is evse.ac.current.
+// Every other fact, capability and operation is unmapped. A service row stays
+// an unrequested service. Relation rows are counted and are not projected here.
 func checkRoster161(roster roster161) (map[string]int, error) {
 	manifest := Manifest161()
 	if roster.Contract != Contract || roster.Target.Name != string(TargetID) || roster.Target.Version != string(TargetVersion161) || roster.MappingRevision.String() != string(MappingRevision161) {
@@ -593,9 +593,6 @@ func checkRoster161(roster roster161) (map[string]int, error) {
 	for name, version := range roster.Pins.Packs {
 		packs["helianthus.pack."+name] = version
 	}
-	if len(packs) != len(manifest.PackVersions) {
-		return nil, errors.New("roster pins another pack set")
-	}
 	for _, pack := range manifest.PackVersions {
 		if packs[string(pack.ID)] != string(pack.Version) {
 			return nil, fmt.Errorf("roster pins %s at %q", pack.ID, packs[string(pack.ID)])
@@ -603,6 +600,7 @@ func checkRoster161(roster roster161) (map[string]int, error) {
 	}
 	ignored := map[string]int{}
 	requested := make([]projection.RequestedItem, 0, len(roster.Rows))
+	transformed := 0
 	for _, row := range roster.Rows {
 		if version, ok := packs[row.Ref.Pack.ID]; !ok || version != row.Ref.Pack.Version {
 			return nil, fmt.Errorf("row %s names an unpinned pack", row.Ref.ID)
@@ -615,25 +613,35 @@ func checkRoster161(roster roster161) (map[string]int, error) {
 				if row.Disposition != string(projection.ProjectionTransformed) || row.Target == nil || row.Target.DeviceTypeID != 0x0510 || row.Target.ClusterID != 0x0090 || row.Target.AttributeID != 0x0005 {
 					return nil, errors.New("current row is not the transformed ActiveCurrent mapping")
 				}
+				transformed++
 				continue
 			}
 			if row.Disposition != string(projection.ProjectionUnknown) || row.Reason != "matter.unmapped.v1" || row.Target != nil {
 				return nil, fmt.Errorf("row %s is not an unmapped ledger row", row.Ref.ID)
 			}
-		case "service", projection.ItemRelation:
+		case "service":
+			if row.Disposition != string(projection.ProjectionUnsupported) || row.Reason != "matter.service_not_requested_item.v1" || row.Target != nil {
+				return nil, fmt.Errorf("row %s is not an unrequested service", row.Ref.ID)
+			}
+			ignored[row.Kind]++
+		case projection.ItemRelation:
 			ignored[row.Kind]++
 		default:
 			return nil, fmt.Errorf("row %s has unknown kind %q", row.Ref.ID, row.Kind)
 		}
 	}
-	sort.Slice(requested, func(i, j int) bool {
-		if requested[i].Kind != requested[j].Kind {
-			return requested[i].Kind < requested[j].Kind
+	if transformed != 1 {
+		return nil, errors.New("roster does not contain exactly one transformed current row")
+	}
+	have := make(map[projection.RequestedItem]struct{}, len(requested))
+	for _, item := range requested {
+		have[item] = struct{}{}
+	}
+	want, _ := Ledger()
+	for _, item := range want {
+		if _, ok := have[item]; !ok {
+			return nil, fmt.Errorf("roster omits %s %s", item.Kind, item.ItemID)
 		}
-		return requested[i].ItemID < requested[j].ItemID
-	})
-	if want, _ := Ledger(); !reflect.DeepEqual(requested, want) {
-		return nil, errors.New("projected roster rows differ from the ledger")
 	}
 	return ignored, nil
 }

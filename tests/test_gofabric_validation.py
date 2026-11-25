@@ -210,9 +210,11 @@ class GoFabricValidationTest(unittest.TestCase):
 class LockPinAcceptanceTest(unittest.TestCase):
     """The lock pins the go-fabric release in go.mod and accepts a roster and a profile pin."""
 
-    def test_committed_lock_pins_the_go_mod_release_and_no_roster_or_profile(self) -> None:
+    def test_committed_lock_pins_the_go_mod_release_mapping_and_profile(self) -> None:
         import json
         import sys
+
+        from runtime.production_readiness import _composition_digest
 
         sys.path.insert(0, str(ROOT / "tools"))
         try:
@@ -223,8 +225,16 @@ class LockPinAcceptanceTest(unittest.TestCase):
         self.assertEqual(validate_module_pin(lock, ROOT), [])
         go_mod = (ROOT / "go.mod").read_text(encoding="utf-8")
         self.assertIn(f"require {lock['sdk']['module']} {lock['sdk']['release_tag']}\n", go_mod)
-        self.assertIsNone(lock["mapping"])
-        self.assertIsNone(lock["accepted_runtime_composition_profile_sha256"])
+        mapping = lock["mapping"]
+        self.assertEqual(set(mapping), {"repository", "path", "sha256"})
+        self.assertEqual(mapping["repository"], "https://github.com/Project-Helianthus/helianthus-docs-semantic.git")
+        self.assertEqual(mapping["path"], "api/v1/targets/matter-1.6.1-v1.json")
+        self.assertRegex(mapping["sha256"], r"^[0-9a-f]{64}$")
+        profile = json.loads((ROOT / "targets" / "pilot" / "profile.json").read_text(encoding="utf-8"))
+        self.assertEqual(profile["mapping"], mapping)
+        digest = _composition_digest(profile)
+        self.assertEqual(lock["accepted_runtime_composition_profile_sha256"], digest)
+        self.assertRegex(digest, r"^[0-9a-f]{64}$")
 
     def test_accepted_roster_and_profile_pins_pass_the_validator(self) -> None:
         import hashlib
