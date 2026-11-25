@@ -50,6 +50,7 @@ type AttributeRow struct {
 	Element     string
 	Dimension   string
 	Encoder     string
+	Reason      string
 	Declared    any
 	Detail      string
 }
@@ -180,7 +181,7 @@ func pilotProfile() (Profile, error) {
 			ClusterID: row.ClusterID, ClusterName: row.ClusterName, AttributeID: row.AttributeID,
 			Name: row.Name, MatterType: row.MatterType, Nullable: row.Nullable, Mandatory: row.Mandatory,
 			Field: row.Field, Origin: string(row.Origin), PackID: row.PackID, PackVersion: row.PackVersion,
-			Element: row.Element, Dimension: row.Dimension, Encoder: row.Encoder, Declared: row.Declared, Detail: row.Detail,
+			Element: row.Element, Dimension: row.Dimension, Encoder: row.Encoder, Reason: row.Reason, Declared: row.Declared, Detail: row.Detail,
 		}
 	}
 	folds := pilot.Folds()

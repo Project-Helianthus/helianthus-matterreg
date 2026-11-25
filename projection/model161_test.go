@@ -583,7 +583,7 @@ func readRoster161(root, path, digest string) (roster161, error) {
 // Further pack pins and further fact, capability and operation rows are kept.
 // The ledger rows must be present. The only transformed fact is evse.ac.current.
 // Every other fact, capability and operation is unmapped. A service row stays
-// an unrequested service. Relation rows are counted and are not projected here.
+// an unrequested service. Event rows must be unmapped. Relation rows are counted and are not projected here.
 func checkRoster161(roster roster161) (map[string]int, error) {
 	manifest := Manifest161()
 	if roster.Contract != Contract || roster.Target.Name != string(TargetID) || roster.Target.Version != string(TargetVersion161) || roster.MappingRevision.String() != string(MappingRevision161) {
@@ -622,6 +622,11 @@ func checkRoster161(roster roster161) (map[string]int, error) {
 		case "service":
 			if row.Disposition != string(projection.ProjectionUnsupported) || row.Reason != "matter.service_not_requested_item.v1" || row.Target != nil {
 				return nil, fmt.Errorf("row %s is not an unrequested service", row.Ref.ID)
+			}
+			ignored[row.Kind]++
+		case "event":
+			if row.Disposition != string(projection.ProjectionUnknown) || row.Reason != "matter.unmapped.v1" || row.Target != nil {
+				return nil, fmt.Errorf("row %s is not an unmapped event row", row.Ref.ID)
 			}
 			ignored[row.Kind]++
 		case projection.ItemRelation:

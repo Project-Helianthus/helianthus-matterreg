@@ -5,6 +5,10 @@ import (
 
 	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
 	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/evse"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/infrastructure"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/pv"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/storage"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/thermal"
 	semprojection "github.com/Project-Helianthus/helianthus-semreg/semreg/v1/projection"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/composition"
@@ -24,6 +28,7 @@ type ProjectedAttribute struct {
 	Origin      string `json:"origin"`
 	Element     string `json:"element,omitempty"`
 	Encoder     string `json:"encoder,omitempty"`
+	Field       string `json:"field,omitempty"`
 }
 
 // ProfileResult is the profile-driven projection. It is not the one-attribute
@@ -49,6 +54,10 @@ func ProjectProfile161(kind string, snapshot semreg.Snapshot, evaluation semreg.
 	if !ok {
 		return ProfileResult{}, &semreg.Error{ID: semreg.PreconditionFailed, Detail: "matter profile kind"}
 	}
+	return projectLoadedProfile(profile, snapshot, evaluation)
+}
+
+func projectLoadedProfile(profile composition.Profile, snapshot semreg.Snapshot, evaluation semreg.EvaluationView) (ProfileResult, error) {
 	if err := snapshot.Validate(); err != nil {
 		return ProfileResult{}, err
 	}
@@ -66,14 +75,14 @@ func ProjectProfile161(kind string, snapshot semreg.Snapshot, evaluation semreg.
 		if row.Mandatory && row.Origin == composition.OriginMissing {
 			result.Missing = append(result.Missing, row.ReportName())
 		}
-		if row.Field != "" || row.Origin == composition.OriginMissing {
+		if row.Origin == composition.OriginMissing {
 			continue
 		}
 		switch row.Origin {
 		case composition.OriginDeclared:
 			result.Attributes = append(result.Attributes, ProjectedAttribute{
 				ClusterID: row.ClusterID, AttributeID: row.AttributeID, Name: row.Name, MatterType: row.MatterType,
-				Nullable: row.Nullable, Declared: true, Value: row.Declared, Origin: row.Origin,
+				Nullable: row.Nullable, Declared: true, Value: row.Declared, Origin: row.Origin, Field: row.Field,
 			})
 		case composition.OriginSemreg:
 			attribute, disposition, err := projectSemregRow(row, profile.Folds, snapshot, evaluation)
@@ -96,7 +105,15 @@ func ProjectProfile161(kind string, snapshot semreg.Snapshot, evaluation semreg.
 func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, snapshot semreg.Snapshot, evaluation semreg.EvaluationView) (ProjectedAttribute, semprojection.ProjectionDisposition, error) {
 	attribute := ProjectedAttribute{
 		ClusterID: row.ClusterID, AttributeID: row.AttributeID, Name: row.Name, MatterType: row.MatterType,
-		Nullable: row.Nullable, Origin: row.Origin, Element: row.Element, Encoder: row.Encoder,
+		Nullable: row.Nullable, Origin: row.Origin, Element: row.Element, Encoder: row.Encoder, Field: row.Field,
+	}
+	encoder, known := profileEncoders[row.Encoder]
+	if !known {
+		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, fmt.Errorf("matter profile encoder %s", row.Encoder)
+	}
+	validator, ok := profilePackValidators[row.PackID]
+	if !ok {
+		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, fmt.Errorf("matter profile pack %s has no validator", row.PackID)
 	}
 	unknown := unknownDisposition(row.Element)
 	var matched []semreg.FactCandidate
@@ -119,10 +136,8 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 		if !usableCandidate(candidate) || !evaluationUsable(candidate.CandidateID, evaluation) {
 			continue
 		}
-		if row.Element == "evse.ac.current" {
-			if err := evse.New().ValidateFact(candidate.Key, candidate.Value); err != nil {
-				return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, err
-			}
+		if err := validator.ValidateFact(candidate.Key, candidate.Value); err != nil {
+			return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, err
 		}
 		good = append(good, candidate)
 	}
@@ -138,15 +153,15 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 	if len(matched) != 1 {
 		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, &semreg.Error{ID: semreg.PreconditionFailed, Detail: "matter projection ambiguous current"}
 	}
-	encoded, err := encodeRow(row, *good[0].Value)
+	encoded, err := encoder.encode(*good[0].Value)
 	if err != nil {
 		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, err
 	}
 	attribute.Value = encoded
-	reason := semreg.DefinitionID("matter.phase_endpoint_identity_loss.v1")
+	reason := semreg.DefinitionID(row.Reason)
 	loss := []semprojection.LossDetail{}
 	for _, fold := range folds {
-		if !fold.Declared {
+		if !fold.Declared || !containsItem(fold.SourceItems, row.Element) {
 			continue
 		}
 		items := make([]semreg.DefinitionID, len(fold.SourceItems))
@@ -156,8 +171,7 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 		loss = append(loss, semprojection.LossDetail{Kind: semprojection.LossKind(fold.Kind), SourceItems: items, Description: fold.Description})
 	}
 	loss = append(loss, semprojection.LossDetail{
-		Kind: semprojection.LossUnit, SourceItems: []semreg.DefinitionID{semreg.DefinitionID(row.Element)},
-		Description: "amperes are represented as integral milliamperes only when exact and representable",
+		Kind: encoder.lossKind, SourceItems: []semreg.DefinitionID{semreg.DefinitionID(row.Element)}, Description: encoder.lossDescription,
 	})
 	return attribute, semprojection.ProjectionDisposition{
 		Kind: semprojection.ItemFact, ItemID: semreg.DefinitionID(row.Element), Outcome: semprojection.ProjectionTransformed,
@@ -165,13 +179,34 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 	}, nil
 }
 
-func encodeRow(row composition.AttributeRow, value semreg.Value) (string, error) {
-	switch row.Encoder {
-	case "ampere_to_milliampere":
-		return amperesToMilliampere(value)
-	default:
-		return "", fmt.Errorf("matter profile encoder %s", row.Encoder)
+type profileEncoder struct {
+	encode          func(semreg.Value) (string, error)
+	lossKind        semprojection.LossKind
+	lossDescription string
+}
+
+var profileEncoders = map[string]profileEncoder{
+	"ampere_to_milliampere": {
+		encode: amperesToMilliampere, lossKind: semprojection.LossUnit,
+		lossDescription: "amperes are represented as integral milliamperes only when exact and representable",
+	},
+}
+
+var profilePackValidators = map[string]semreg.PackValidator{
+	"helianthus.pack.evse":           evse.New(),
+	"helianthus.pack.infrastructure": infrastructure.New(),
+	"helianthus.pack.pv":             pv.New(),
+	"helianthus.pack.storage":        storage.New(),
+	"helianthus.pack.thermal":        thermal.New(),
+}
+
+func containsItem(items []string, item string) bool {
+	for _, candidate := range items {
+		if candidate == item {
+			return true
+		}
 	}
+	return false
 }
 
 func profileKey(row composition.AttributeRow, key semreg.FactKey) bool {

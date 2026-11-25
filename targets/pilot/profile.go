@@ -37,6 +37,7 @@ type AttributeRow struct {
 	Element     string
 	Dimension   string
 	Encoder     string
+	Reason      string
 	Declared    any
 	Detail      string
 }
@@ -139,5 +140,5 @@ var attributeRows = []AttributeRow{
 	{ClusterID: 0x0090, ClusterName: "Electrical Power Measurement", AttributeID: 0x0002, Name: "Accuracy", Field: "RangeMin", MatterType: "int64", Mandatory: true, Origin: OriginMissing, Detail: "no catalog element"},
 	{ClusterID: 0x0090, ClusterName: "Electrical Power Measurement", AttributeID: 0x0002, Name: "Accuracy", Field: "RangeMax", MatterType: "int64", Mandatory: true, Origin: OriginMissing, Detail: "no catalog element"},
 	{ClusterID: 0x0090, ClusterName: "Electrical Power Measurement", AttributeID: 0x0008, Name: "ActivePower", MatterType: "power-mW", Nullable: true, Mandatory: true, Origin: OriginMissing, Detail: "no single element id among evse.ac.active_power, infrastructure.ac.active_power, pv.ac.active_power, pv.ac.aggregate_active_power, pv.dc.aggregate_power, pv.dc.power, storage.pack.power, infrastructure.power.pcc, infrastructure.power.import_active, infrastructure.power.export_active"},
-	{ClusterID: 0x0090, ClusterName: "Electrical Power Measurement", AttributeID: 0x0005, Name: "ActiveCurrent", MatterType: "amperage-mA", Nullable: true, Origin: OriginSemreg, PackID: "helianthus.pack.evse", PackVersion: "1.0.0", Element: "evse.ac.current", Dimension: "evse.dimension.phase", Encoder: "ampere_to_milliampere"},
+	{ClusterID: 0x0090, ClusterName: "Electrical Power Measurement", AttributeID: 0x0005, Name: "ActiveCurrent", MatterType: "amperage-mA", Nullable: true, Origin: OriginSemreg, PackID: "helianthus.pack.evse", PackVersion: "1.0.0", Element: "evse.ac.current", Dimension: "evse.dimension.phase", Encoder: "ampere_to_milliampere", Reason: "matter.phase_endpoint_identity_loss.v1"},
 }
