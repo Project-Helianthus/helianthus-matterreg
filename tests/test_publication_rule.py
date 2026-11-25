@@ -272,7 +272,7 @@ class SelectorAppliesTheRuleTest(unittest.TestCase):
         result = EndpointSelector(self.store, NODE, rule=self.rule).reconcile(lock, COMPOSITION, None, report(offer(CURRENT, RES_A), offer(POWER, RES_B)))
         self.assertEqual([state.state for state in result.states], [WITHHELD, WITHHELD])
         for state in result.states:
-            self.assertIn("no reviewed accepted runtime-composition profile is pinned", state.reasons)
+            self.assertIn("runtime-composition profile differs from the reviewed pinned profile", state.reasons)
         self.assertEqual(self.store.writes, [])
 
     def test_more_than_sixty_four_resources_get_distinct_stable_numbers(self) -> None:

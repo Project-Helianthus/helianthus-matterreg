@@ -85,7 +85,12 @@ class ProductionReadinessTest(unittest.TestCase):
     def test_complete_self_asserted_evidence_cannot_enable_the_gate(self) -> None:
         decision = evaluate(self.lock, self.composition, self.build)
         self.assertFalse(decision.permitted)
-        self.assertIn("no reviewed accepted runtime-composition profile is pinned", decision.reasons)
+        self.assertIn("runtime-composition profile differs from the reviewed pinned profile", decision.reasons)
+        unpinned = copy.deepcopy(self.lock)
+        unpinned["accepted_runtime_composition_profile_sha256"] = None
+        denied = evaluate(unpinned, self.composition, self.build)
+        self.assertFalse(denied.permitted)
+        self.assertIn("no reviewed accepted runtime-composition profile is pinned", denied.reasons)
 
     def test_unset_mapping_never_permits_even_with_a_matching_profile_digest(self) -> None:
         lock = load_lock(mapping=None)

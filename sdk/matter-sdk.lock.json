@@ -1,18 +1,41 @@
 {
   "schema_version": 1,
-  "accepted_runtime_composition_profile_sha256": null,
+  "accepted_runtime_composition_profile_sha256": "3937a607ef58b734cc1a9f048b7640a9cee6e47029c861ce8869dd86b525907d",
   "sdk": {
     "provider": "go-fabric",
     "module": "thingfabric.dev/go-fabric",
     "release_tag": "v0.25.0",
     "checksum": "h1:zuDqPpoEa06nRv5WF22dASsKa0FqXKAUUncm+Lyq78M=",
-    "model": {"name": "Matter", "version": "1.6.1"}
+    "model": {
+      "name": "Matter",
+      "version": "1.6.1"
+    }
   },
-  "mapping": null,
+  "mapping": {
+    "repository": "https://github.com/Project-Helianthus/helianthus-docs-semantic.git",
+    "path": "api/v1/targets/matter-1.6.1-v1.json",
+    "sha256": "c4d4afabdd5daf69ff8350c0531f50901363fa9549eb26e7d43a5cb80780e617"
+  },
   "target": {
-    "device_type": {"name": "Electrical Sensor", "id": "0x0510", "revision": 1},
-    "power_topology_cluster": {"name": "Power Topology", "id": "0x009C", "revision": 1},
-    "electrical_power_measurement_cluster": {"name": "Electrical Power Measurement", "id": "0x0090", "revision": 3},
-    "active_current_attribute": {"name": "ActiveCurrent", "id": "0x0005", "optional": true}
+    "device_type": {
+      "name": "Electrical Sensor",
+      "id": "0x0510",
+      "revision": 1
+    },
+    "power_topology_cluster": {
+      "name": "Power Topology",
+      "id": "0x009C",
+      "revision": 1
+    },
+    "electrical_power_measurement_cluster": {
+      "name": "Electrical Power Measurement",
+      "id": "0x0090",
+      "revision": 3
+    },
+    "active_current_attribute": {
+      "name": "ActiveCurrent",
+      "id": "0x0005",
+      "optional": true
+    }
   }
 }
