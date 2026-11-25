@@ -111,6 +111,10 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 	if !known {
 		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, fmt.Errorf("matter profile encoder %s", row.Encoder)
 	}
+	validator, ok := profilePackValidators[row.PackID]
+	if !ok {
+		return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, fmt.Errorf("matter profile pack %s has no validator", row.PackID)
+	}
 	unknown := unknownDisposition(row.Element)
 	var matched []semreg.FactCandidate
 	for _, fact := range snapshot.Facts {
@@ -131,10 +135,6 @@ func projectSemregRow(row composition.AttributeRow, folds []composition.Fold, sn
 	for _, candidate := range matched {
 		if !usableCandidate(candidate) || !evaluationUsable(candidate.CandidateID, evaluation) {
 			continue
-		}
-		validator, ok := profilePackValidators[row.PackID]
-		if !ok {
-			return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, fmt.Errorf("matter profile pack %s has no validator", row.PackID)
 		}
 		if err := validator.ValidateFact(candidate.Key, candidate.Value); err != nil {
 			return ProjectedAttribute{}, semprojection.ProjectionDisposition{}, err

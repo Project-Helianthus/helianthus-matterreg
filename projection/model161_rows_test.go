@@ -4,6 +4,8 @@ import (
 	"strings"
 	"testing"
 
+	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
+
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/composition"
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/pilot"
 )
@@ -78,6 +80,16 @@ func TestProfileEmitsDeclaredFieldRow(t *testing.T) {
 	last := got.Attributes[len(got.Attributes)-1]
 	if last.Field != "Measured" || !last.Declared || last.Value != true {
 		t.Fatalf("field row %#v", last)
+	}
+}
+
+func TestProfileRefusesUnknownPackWithoutFact(t *testing.T) {
+	f := newMatterFixture(t, []semreg.FactCandidate{})
+	profile := loadedPilot(t)
+	const unknownPack = "synthetic.pack"
+	profile.Attributes[currentRowIndex(t, profile)].PackID = unknownPack
+	if _, err := projectLoadedProfile(profile, f.snapshot, f.evaluation); err == nil || !strings.Contains(err.Error(), "pack "+unknownPack+" has no validator") {
+		t.Fatalf("expected missing pack validator error without a matching fact, got %v", err)
 	}
 }
 
