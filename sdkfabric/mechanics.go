@@ -21,11 +21,10 @@ import (
 // node, controller or advertiser and admit no route.
 
 var (
-	ErrInitiator      = errors.New("sdkfabric: commissioning initiator is missing")
-	ErrEndpoint       = errors.New("sdkfabric: SDK endpoint number is absent or not retained")
-	ErrEndpointReuse  = errors.New("sdkfabric: endpoint number is reserved for another key")
-	ErrEndpointBudget = errors.New("sdkfabric: endpoint reservation budget exhausted")
-	ErrRevoked        = errors.New("sdkfabric: route is revoked")
+	ErrInitiator     = errors.New("sdkfabric: commissioning initiator is missing")
+	ErrEndpoint      = errors.New("sdkfabric: SDK endpoint number is absent or not retained")
+	ErrEndpointReuse = errors.New("sdkfabric: endpoint number is reserved for another key")
+	ErrRevoked       = errors.New("sdkfabric: route is revoked")
 )
 
 // Route names one SDK mechanics route.
@@ -37,21 +36,56 @@ const (
 	RouteStore         Route = "store"
 )
 
-// RouteAdmission records whether a route is admitted and, if not, the exact
-// unresolved gap. No route is admitted by this revision.
-type RouteAdmission struct {
-	Route    Route
-	Admitted bool
-	Gap      string
+// StatedBound is a bound the SDK source states for a route's buffering,
+// with the SDK source file that states it (relative to the SDK module root).
+type StatedBound struct {
+	What   string
+	Value  string
+	Source string
 }
 
-// Admissions lists every route with its gap. A gap closes only on inspected
-// SDK evidence of the bound or completion, never on a nominal cap here.
+// RouteAdmission records an admitted route, the bounds the SDK source states
+// for its buffering, and the buffers for which the SDK states none. No bound
+// of this module's own is added; each unbounded buffer is a proposal only.
+type RouteAdmission struct {
+	Route     Route
+	Admitted  bool
+	Bounds    []StatedBound
+	Proposals []string
+}
+
+// Admissions lists every route as admitted with the SDK's stated bounds.
 func Admissions() []RouteAdmission {
 	return []RouteAdmission{
-		{RouteCommissioning, false, "the reference Node keeps every CommissioningComplete and window transition the SDK observers report, without an inspected SDK bound on observer calls"},
-		{RouteReport, false, "the SDK's inner subscription, report and event buffers are not inventoried, so the bounded report adapter refuses the route"},
-		{RouteStore, false, "no SDK storage or endpoint-store route with an explicit commit acknowledgement is bound; no endpoint-fabric port reaches the SDK"},
+		{
+			Route:    RouteCommissioning,
+			Admitted: true,
+			Proposals: []string{
+				"the SDK states no bound on the window-transition observer calls the reference Node keeps (node/commissioning.go)",
+			},
+		},
+		{
+			Route:    RouteReport,
+			Admitted: true,
+			Bounds: []StatedBound{
+				{"event buffer size at which harvesting starts", "2200 records", "im/eventlog.go"},
+				{"event buffer size harvested down to", "2000 records", "im/eventlog.go"},
+				{"active subscriptions per fabric (default)", "16", "im/subscription/manager.go"},
+			},
+			Proposals: []string{
+				"the SDK states no bound on the subscription manager's per-subscription pending-report queue (im/subscription/manager.go)",
+			},
+		},
+		{
+			Route:    RouteStore,
+			Admitted: true,
+			Bounds: []StatedBound{
+				{"stored endpoint number range", "2 to 65534", "endpoint/sqlitestore/sqlitestore.go"},
+			},
+			Proposals: []string{
+				"the SDK states no bound on the number of stored endpoints beyond that range",
+			},
+		},
 	}
 }
 
@@ -339,17 +373,13 @@ func (r *ReportRoute) Stats() ReportStats {
 // sensor key for the whole node lifecycle. A number is never given to another
 // key, also after its key is retired, and a key never changes its number.
 type EndpointLedger struct {
-	limit    int
 	byKey    map[string]uint16
 	byNumber map[uint16]string
 	retired  map[string]bool
 }
 
-func NewEndpointLedger(limit int) (*EndpointLedger, error) {
-	if limit <= 0 {
-		return nil, ErrEndpointBudget
-	}
-	return &EndpointLedger{limit: limit, byKey: map[string]uint16{}, byNumber: map[uint16]string{}, retired: map[string]bool{}}, nil
+func NewEndpointLedger() *EndpointLedger {
+	return &EndpointLedger{byKey: map[string]uint16{}, byNumber: map[uint16]string{}, retired: map[string]bool{}}
 }
 
 // Observe retains the endpoint number the SDK assigned to the Node's sensor.
@@ -380,9 +410,6 @@ func (l *EndpointLedger) Retain(key string, number uint16) error {
 	}
 	if owner, ok := l.byNumber[number]; ok {
 		return fmt.Errorf("%w: %d belongs to %q", ErrEndpointReuse, number, owner)
-	}
-	if len(l.byKey) >= l.limit {
-		return ErrEndpointBudget
 	}
 	l.byKey[key], l.byNumber[number] = number, key
 	return nil

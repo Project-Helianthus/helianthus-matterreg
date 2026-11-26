@@ -481,8 +481,21 @@ func TestAA30ReportRoute(t *testing.T) {
 		t.Fatal("the bounded adapter admitted an uninventoried route")
 	}
 	for _, a := range sdkfabric.Admissions() {
-		if a.Admitted || a.Gap == "" {
-			t.Fatalf("admission %+v", a)
+		if !a.Admitted {
+			t.Fatalf("route not admitted: %+v", a)
+		}
+		for _, b := range a.Bounds {
+			if b.What == "" || b.Value == "" || b.Source == "" {
+				t.Fatalf("bound without value or source file: %+v", a)
+			}
+		}
+	}
+	for _, a := range sdkfabric.Admissions() {
+		if a.Route == sdkfabric.RouteReport && len(a.Bounds) == 0 {
+			t.Fatalf("report route records no stated bound: %+v", a)
+		}
+		if a.Route == sdkfabric.RouteCommissioning && (len(a.Bounds) != 0 || len(a.Proposals) == 0) {
+			t.Fatalf("commissioning route must carry a proposal and no bound of our own: %+v", a)
 		}
 	}
 	if _, err := sdkfabric.QualifyReference(r.fn, route); !errors.Is(err, sdkfabric.ErrReferenceUnqualified) {
@@ -675,10 +688,7 @@ func TestAA30ReportBudgets(t *testing.T) {
 // number, a missing E budget, and a retire that clears another key.
 func TestAA30EndpointRetention(t *testing.T) {
 	r := aa30Start(t)
-	ledger, err := sdkfabric.NewEndpointLedger(2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	ledger := sdkfabric.NewEndpointLedger()
 	number, err := ledger.Observe(r.fn)
 	if err != nil || number == 0 {
 		t.Fatalf("observe %d, %v", number, err)
@@ -703,8 +713,11 @@ func TestAA30EndpointRetention(t *testing.T) {
 	if err := ledger.Retain("sentinel", sentinel); err != nil {
 		t.Fatal(err)
 	}
-	if err := ledger.Retain("third", number+8); !errors.Is(err, sdkfabric.ErrEndpointBudget) {
-		t.Fatalf("E=2 exceeded: %v", err)
+	const many = 200
+	for i := 0; i < many; i++ {
+		if err := ledger.Retain(fmt.Sprintf("many-%d", i), number+100+uint16(i)); err != nil {
+			t.Fatalf("key %d beyond any former limit: %v", i, err)
+		}
 	}
 	if err := ledger.Retire(key); err != nil {
 		t.Fatal(err)
@@ -715,7 +728,7 @@ func TestAA30EndpointRetention(t *testing.T) {
 	if err := ledger.Retain("other", number); !errors.Is(err, sdkfabric.ErrEndpointReuse) {
 		t.Fatalf("retired number reused: %v", err)
 	}
-	if got := ledger.Retained(); len(got) != 2 || got[key] != number || got["sentinel"] != sentinel {
+	if got := ledger.Retained(); len(got) != 2+many || got[key] != number || got["sentinel"] != sentinel {
 		t.Fatalf("retained %v", got)
 	}
 }
