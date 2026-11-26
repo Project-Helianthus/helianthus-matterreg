@@ -151,3 +151,60 @@ All file links use public `blob/main` destinations. Line ranges locate the inspe
 [growatt]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/growatt/protocol-ii-readonly-v1.md#L22-L144
 [huawei]: https://github.com/Project-Helianthus/helianthus-docs-modbus/blob/main/protocols/huawei/inverter-battery-readonly-v1.md
 [huawei-reg]: https://github.com/Project-Helianthus/helianthus-modbusreg/blob/main/profiles/vendor/huawei/sun2000-disposition.json#L24-L171
+
+## Solar Power profile for inverters and PV systems
+
+The kinds `resource.inverter` and `resource.pv_system` compose the Solar Power
+device type (`0x0017`, revision 1). The profile is
+`targets/clusters/solarpower/`; the cluster tables are under `targets/clusters/`.
+Production admission is declared from the mapping; bench or hardware runs are
+recorded levels and none is recorded here.
+
+**Required parts.** The device type requires two nested device types, both
+mounted under the one resource root. They need no separately admitted SemReg
+resource; presence of a row without the mounted part does not satisfy
+conformance.
+
+| Part role | Device type | Multiplicity | Mounted clusters |
+| --- | --- | --- | --- |
+| `power_source` | Power Source `0x0011`, revision 1 | min 1 | Power Source `0x002F` with feature WIRED; Descriptor with feature TAGLIST |
+| `electrical_sensor` | Electrical Sensor `0x0510`, revision 1 | min 1 | Electrical Power Measurement `0x0090` (attributes `Voltage` and `ActiveCurrent` required); Electrical Energy Measurement `0x0091` (feature EXPE); Power Topology `0x009C`; Descriptor |
+
+Identify and Temperature Sensor are optional and not mounted. Device Energy
+Management is named by the device type with a conformance the data model
+describes elsewhere and is not mounted. Descriptor, its global attributes and
+the part lists are supplied by the SDK assembler; the profile fixes their values.
+
+**Mandatory elements.** The 1.6.1 target maps one attribute, `evse.ac.current`
+to Electrical Power Measurement `ActiveCurrent`, and it belongs to the EVSE
+phase. No `pv.*` element has a transformed row, so every dynamic mandatory
+element is `missing` with reason `matter.unmapped.v1`:
+
+| Element | Origin | Reason |
+| --- | --- | --- |
+| Descriptor `DeviceTypeList`, `ServerList`, `ClientList`, `PartsList`, `FeatureMap`, `ClusterRevision` at the root and each part | declared | fixed by the device type and the mounted set |
+| `ClusterRevision` of every mounted cluster | declared | fixed by the data model |
+| Power Source `FeatureMap` | declared | WIRED only, the feature the device type requires |
+| Power Source `Status`, `Order`, `Description`, `WiredCurrentType`, `EndpointList` | missing | no transformed row; the current type is not derived from an AC or DC name |
+| Descriptor `TagList` of the Power Source part | missing | the device type requires TAGLIST and the target maps no tag |
+| Electrical Power Measurement `FeatureMap` | missing | at least one of DIRC and ALTC is required and the device type fixes neither |
+| Electrical Power Measurement `PowerMode`, `NumberOfMeasurementTypes`, `Accuracy` and each of its fields, `Voltage`, `ActiveCurrent`, `ActivePower` | missing | no transformed row |
+| Electrical Energy Measurement `FeatureMap` | missing | EXPE is required; one of CUME and PERE is required and nothing fixes which |
+| Electrical Energy Measurement `Accuracy` and each of its fields | missing | no transformed row |
+| Power Topology `FeatureMap` | missing | exactly one of NODE, TREE and SET is required and nothing fixes which |
+
+A resource of these kinds with a missing mandatory row gets no endpoint and the
+projection report names the row. Declared values satisfy completeness but do not
+admit a resource that has no admitted live element. The Solar Power positive
+stays pending until the target supplies the accuracy and measurement-type
+values; no value is taken from a default.
+
+**Folds and loss.** DC inputs (`pv.dimension.input`) and phases
+(`pv.dimension.phase`) fold into measurement entries of the parent endpoint.
+Each fold is a declared identity loss; the folded values stay in SemReg, MCP and
+GraphQL. Strings and arrays of the PV pack have no Solar Power counterpart in
+the target and are not composed.
+
+**Unknown in the target.** Every other `pv.*` element, capability and operation
+row is `unknown` (`matter.unmapped.v1`). No table of this profile carries an
+encoder, inverse encoder, writable row or SemReg operation.
