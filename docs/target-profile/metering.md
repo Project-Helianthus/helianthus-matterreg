@@ -251,3 +251,46 @@ for the electrical route. No full normative corpus, Linux arm64 build, accepted
 production profile, conformance, certification or interoperability is established.
 Production admission remains denied. Native evidence and partial last-known-good
 state, eBUS MCP compatibility and GraphQL parity remain unchanged.
+
+## Electrical Sensor profile for meters, grid connections and circuits
+
+The kinds `resource.meter`, `resource.grid_connection` and
+`resource.electrical_circuit` compose the Electrical Sensor device type
+(`0x0510`, revision 1). The cluster tables are under `targets/clusters/`
+(Power Source `0x002F`, Electrical Power Measurement `0x0090`, Electrical
+Energy Measurement `0x0091`, Power Topology `0x009C`, Device Energy Management
+`0x0098`) and the profile is `targets/clusters/electricalsensor/`.
+
+**Required clusters.** Descriptor is supplied by the SDK. Power Topology is
+mandatory. At least one of Electrical Power Measurement and Electrical Energy
+Measurement is required; the profile mounts Electrical Power Measurement, as the
+pilot does. The device type has no nested device-type requirement.
+
+**Mandatory elements.** The 1.6.1 target maps one attribute: `evse.ac.current`
+to Electrical Power Measurement `ActiveCurrent` (exact multiply by 1000, integral
+result required, otherwise reported and never rounded). It belongs to the EVSE
+phase, not to these kinds, so none of the three kinds has a transformed row.
+
+| Element | Origin | Reason |
+| --- | --- | --- |
+| Descriptor `DeviceTypeList`, `ServerList`, `ClientList`, `PartsList`, `FeatureMap`, `ClusterRevision` | declared | fixed by the device type and the mounted set |
+| Power Topology `ClusterRevision`; Electrical Power Measurement `ClusterRevision` | declared | fixed by the data model |
+| Power Topology `FeatureMap` | missing | exactly one of NODE, TREE and SET is required and nothing fixes which |
+| Electrical Power Measurement `FeatureMap` | missing | at least one of DIRC and ALTC is required and nothing fixes which |
+| Electrical Power Measurement `PowerMode`, `NumberOfMeasurementTypes`, `Accuracy` and each of its fields, `ActivePower` | missing | `matter.unmapped.v1`: the target has no transformed row; no default or derived value is created |
+
+A resource of these kinds with a missing mandatory row gets no endpoint and the
+projection report names the row. Declared values satisfy completeness but do not
+admit a resource that has no admitted live element.
+
+**Fold and loss.** Phases fold into measurement entries of their parent
+endpoint. The fold is a declared identity loss; the phase values stay in SemReg,
+MCP and GraphQL.
+
+**Unknown in the target.** Every other `infrastructure.*` fact, capability and
+operation row is `unknown` (`matter.unmapped.v1`); Electrical Energy Measurement,
+Device Energy Management and Power Source have no mapped attribute or command,
+so their tables carry no encoder, inverse encoder or SemReg operation.
+
+**Level.** These are source-side declarations from the pinned data model and the
+target; no hardware run is recorded.
