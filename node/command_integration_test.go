@@ -19,6 +19,7 @@ import (
 	"thingfabric.dev/go-fabric/tlv"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/command"
+	"github.com/Project-Helianthus/helianthus-matterreg/publication"
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/composition"
 )
 
@@ -629,5 +630,89 @@ func windowCoveringProfile() composition.Profile {
 			ClusterID: clusterWindowCovering, ElementID: cmdGoToLift, Operation: operationSetTemperature,
 			Capability: capabilitySetTemperature, InverseEncoder: command.InverseCentiCelsiusToKelvin,
 		}},
+	}
+}
+
+// bridgeLauncher hands the bridge the device the rig already added to its site,
+// so the bridge composes and publishes its endpoints on the real SDK node.
+type bridgeLauncher struct {
+	dev interface{ Node() *gfnode.Node }
+}
+
+type bridgeRunning struct{ n *gfnode.Node }
+
+func (l bridgeLauncher) Launch(context.Context, gfnode.Config) (Running, error) {
+	return bridgeRunning{l.dev.Node()}, nil
+}
+
+func (r bridgeRunning) Node() *gfnode.Node { return r.n }
+
+func (bridgeRunning) Stop(context.Context) error { return nil }
+
+const elementCoverPosition = "synthetic.cover.position"
+
+// coverProfile is windowCoveringProfile with one served attribute, so the
+// bridge publishes the resource.
+func coverProfile() composition.Profile {
+	profile := windowCoveringProfile()
+	profile.Attributes = append(profile.Attributes, composition.AttributeRow{
+		ClusterID: clusterWindowCovering, ClusterName: "Window Covering", AttributeID: 0x000E, Name: "CurrentPositionLiftPercent100ths",
+		MatterType: "uint16", Nullable: true, Origin: composition.OriginSemreg, Element: elementCoverPosition, Encoder: "kelvin_to_centicelsius",
+	})
+	return profile
+}
+
+// TestBridgeHandsTheSessionPortsToItsMountedServers builds the endpoints through
+// the bridge's own reconcile, the production composition, with the session's
+// input and scoped operations set on the bridge as the driver factory sets them
+// and without the rig's own mount. One mapped write and one mapped command reach
+// the scoped operations.
+func TestBridgeHandsTheSessionPortsToItsMountedServers(t *testing.T) {
+	r := newRig(t)
+	r.input.set(cutFor("zone-a", "asset.synthetic.zone", "2"))
+	zone := r.input.current()
+	cover := cutFor("cover-a", "asset.synthetic.zone", "2")
+	zone.SettingRoutes = append(zone.SettingRoutes, cover.SettingRoutes...)
+	zone.Snapshots = append(zone.Snapshots, cover.Snapshots...)
+	r.input.set(zone)
+	thermostat := typedProfiles()[kindThermostat]
+	cfg := Config{
+		StoreDir: t.TempDir(), Profiles: []composition.Profile{thermostat, coverProfile()},
+		Roster: []publication.Row{
+			{Element: elementSetpoint, Kind: "attribute", Disposition: publication.Transformed},
+			{Element: elementCoverPosition, Kind: "attribute", Disposition: publication.Transformed},
+		},
+		ProductDescription: gfnode.ProductDescription{VendorID: DevelopmentVendorID, ProductID: ProductID},
+		Input:              r.input,
+	}
+	bridge, err := NewWith(cfg, bridgeLauncher{r.dev})
+	if err != nil {
+		t.Fatal(err)
+	}
+	bridge.SetOperations(r.ops)
+	ctx := r.ctx()
+	if err := bridge.Start(ctx); err != nil {
+		t.Fatal(err)
+	}
+	report, err := bridge.Apply(ctx, []Resource{
+		{ID: "zone-a", Kind: kindThermostat, Elements: []string{elementSetpoint}, Values: map[Selector]Value{{ClusterID: clusterThermostat, AttributeID: attrHeatingSetpoint}: {Value: 2000}}},
+		{ID: "cover-a", Kind: kindWindowCovering, Elements: []string{elementCoverPosition}, Values: map[Selector]Value{{ClusterID: clusterWindowCovering, AttributeID: 0x000E}: {Value: 1000}}},
+	})
+	if err != nil || len(report.Endpoints) != 2 {
+		t.Fatalf("apply: %v %+v", err, report)
+	}
+	r.commission()
+	if status := r.write(r.endpoint("zone-a"), 2100, 0, nil); status != im.StatusSuccess {
+		t.Fatalf("write status %v", status)
+	}
+	if calls, sends := r.ops.snapshot(); len(calls) != 1 || sends != 1 || calls[0].request.Operation.ID != operationSetTemperature {
+		t.Fatalf("after the write: calls %+v sends %d", calls, sends)
+	}
+	result, err := fabrictest.Invoke(r.ctx(), r.pair, client.CommandAt(r.endpoint("cover-a"), clusterWindowCovering, cmdGoToLift), windowcovering.GoToLiftPercentageRequest{LiftPercent100thsValue: 5000})
+	if err != nil || result.Status != im.StatusSuccess {
+		t.Fatalf("invoke %v %v", result.Status, err)
+	}
+	if calls, sends := r.ops.snapshot(); len(calls) != 2 || sends != 2 || !calls[1].bound {
+		t.Fatalf("after the command: calls %+v sends %d", calls, sends)
 	}
 }

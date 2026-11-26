@@ -341,3 +341,31 @@ func TestInversesAreExactDecimals(t *testing.T) {
 		}
 	}
 }
+
+// The session names no bridge for a mounted resource, so the mount carries
+// none and the route is matched by the resource id; a second route of the same
+// resource id under another bridge is a second match and gives no write.
+func TestAMountWithoutABridgeMatchesTheRouteByResourceID(t *testing.T) {
+	bare := driver.NodeRef{ID: node.ID}
+	o := &ops{result: confirmed()}
+	if err := command.New(bare, &input{cut: cut()}, o).Write(context.Background(), row, int16(2100)); err != nil {
+		t.Fatal(err)
+	}
+	if len(o.calls) != 1 {
+		t.Fatalf("calls %d", len(o.calls))
+	}
+	twice := cut()
+	other := twice.SettingRoutes[0]
+	other.For.Subject.Bridge = "bridge.other"
+	twice.SettingRoutes = append(twice.SettingRoutes, other)
+	o = &ops{result: confirmed()}
+	if err := command.New(bare, &input{cut: twice}, o).Write(context.Background(), row, int16(2100)); !errors.Is(err, command.ErrNoRoute) || len(o.calls) != 0 {
+		t.Fatalf("%v, %d calls", err, len(o.calls))
+	}
+	elsewhere := cut()
+	elsewhere.SettingRoutes[0].For.Subject.ID = "zone-b"
+	o = &ops{result: confirmed()}
+	if err := command.New(bare, &input{cut: elsewhere}, o).Write(context.Background(), row, int16(2100)); !errors.Is(err, command.ErrNoRoute) || len(o.calls) != 0 {
+		t.Fatalf("%v, %d calls", err, len(o.calls))
+	}
+}

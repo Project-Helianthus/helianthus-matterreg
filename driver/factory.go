@@ -210,8 +210,8 @@ type instance struct {
 	bridge *node.Bridge
 }
 
-// Start builds the bridge over the session's SemanticInput, starts it and reads
-// SemReg once.
+// Start builds the bridge over the session's SemanticInput and ScopedOperations,
+// starts it and reads SemReg once.
 func (i *instance) Start(ctx context.Context, session semdriver.Session) error {
 	i.mu.Lock()
 	defer i.mu.Unlock()
@@ -224,6 +224,7 @@ func (i *instance) Start(ctx context.Context, session semdriver.Session) error {
 	if err != nil {
 		return err
 	}
+	bridge.SetOperations(session.ScopedOperations())
 	if err := bridge.Start(ctx); err != nil {
 		return err
 	}

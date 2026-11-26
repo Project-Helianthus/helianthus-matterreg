@@ -133,6 +133,18 @@ type Bridge struct {
 
 	cursor     driver.Cursor
 	haveCursor bool
+
+	operations driver.ScopedOperations
+}
+
+// SetOperations gives the bridge the scoped operations of the session whose
+// SemanticInput the configuration carries. Endpoints composed afterwards
+// dispatch their mapped writes and commands through them; without them a mapped
+// write or command dispatches nothing and is refused.
+func (b *Bridge) SetOperations(operations driver.ScopedOperations) {
+	b.mu.Lock()
+	b.operations = operations
+	b.mu.Unlock()
 }
 
 // New validates cfg. It starts nothing.
@@ -360,8 +372,9 @@ func (b *Bridge) reconcile(ctx context.Context, agg *gfnode.Aggregator, plans ma
 		return a.ID < c.ID
 	})
 	built := map[string]*Mount{}
+	ports := &CommandPorts{Input: b.cfg.Input, Operations: b.operations}
 	compose := func(p plan) bool {
-		mount, err := composeEndpoint(p.resource.ID, p.rows, p.resource.Values, p.commands)
+		mount, err := composeEndpoint(p.resource.ID, p.rows, p.resource.Values, p.commands, ports)
 		if err != nil {
 			report.Refused = append(report.Refused, Refusal{ResourceID: p.resource.ID, Reason: err.Error()})
 			delete(plans, p.resource.ID)

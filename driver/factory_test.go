@@ -24,9 +24,27 @@ import (
 type session struct {
 	semdriver.Session
 	input semdriver.SemanticInput
+	ops   *scopedOps
 }
 
 func (s session) SemanticInput() semdriver.SemanticInput { return s.input }
+
+func (s session) ScopedOperations() semdriver.ScopedOperations {
+	s.ops.reads++
+	return s.ops
+}
+
+// scopedOps counts how often the session's scoped operations were read; the
+// bridge holds what it was given.
+type scopedOps struct{ reads int }
+
+func (*scopedOps) Invoke(context.Context, semdriver.OperationRequest) (semdriver.OperationResult, error) {
+	return semdriver.OperationResult{}, nil
+}
+
+func (*scopedOps) InvokeCallBound(context.Context, semdriver.OperationRequest) (semdriver.OperationResult, error) {
+	return semdriver.OperationResult{}, nil
+}
 
 func options(t *testing.T, store string) json.RawMessage {
 	t.Helper()
@@ -177,8 +195,12 @@ func TestStartTakesTheSessionInputAndStopClosesIt(t *testing.T) {
 	}
 	input := nodetest.NewInput()
 	input.Publish(nil, nil)
-	if err := instance.Start(ctx, session{input: input}); err != nil {
+	ops := &scopedOps{}
+	if err := instance.Start(ctx, session{input: input, ops: ops}); err != nil {
 		t.Fatal(err)
+	}
+	if ops.reads != 1 {
+		t.Fatalf("the session's scoped operations were read %d times", ops.reads)
 	}
 	if input.Captures != 1 {
 		t.Fatalf("the session input was captured %d times", input.Captures)
@@ -186,7 +208,7 @@ func TestStartTakesTheSessionInputAndStopClosesIt(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, node.StoreFile)); err != nil {
 		t.Fatalf("the store file is not in the selected directory: %v", err)
 	}
-	if err := instance.Start(ctx, session{input: input}); err == nil {
+	if err := instance.Start(ctx, session{input: input, ops: ops}); err == nil {
 		t.Fatal("second start accepted")
 	}
 	instance.FenceWithdrawal()

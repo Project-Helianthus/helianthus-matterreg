@@ -103,7 +103,7 @@ func (d *Dispatcher) dispatch(ctx context.Context, row composition.CommandRow, v
 func (d *Dispatcher) request(cut driver.SemanticCut, row composition.CommandRow) (driver.OperationRequest, error) {
 	var found []driver.OperationRequest
 	for _, route := range cut.SettingRoutes {
-		if route.For.Subject != d.node || string(route.Operation.ID) != row.Operation {
+		if !d.names(route.For.Subject) || string(route.Operation.ID) != row.Operation {
 			continue
 		}
 		for _, snapshot := range cut.Snapshots {
@@ -116,6 +116,17 @@ func (d *Dispatcher) request(cut driver.SemanticCut, row composition.CommandRow)
 		return driver.OperationRequest{}, fmt.Errorf("%w: %d matches", ErrNoRoute, len(found))
 	}
 	return found[0], nil
+}
+
+// names reports whether a route subject is the mounted resource. A mounted
+// resource that carries no bridge id (the session names none) is matched by its
+// resource id; a second route of the same resource id under another bridge is
+// then a second match, which gives no write.
+func (d *Dispatcher) names(subject driver.NodeRef) bool {
+	if d.node.Bridge == "" {
+		return subject.ID == d.node.ID
+	}
+	return subject == d.node
 }
 
 func match(snapshot semreg.Snapshot, route driver.SettingRoute, node driver.NodeRef, row composition.CommandRow) (driver.OperationRequest, bool) {
