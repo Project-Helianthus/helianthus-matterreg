@@ -209,6 +209,77 @@ production profile, conformance, certification or interoperability is establishe
 Production admission remains denied. Native evidence and partial last-known-good
 state, eBUS MCP compatibility and GraphQL parity remain unchanged.
 
+## EVSE profile
+
+The kinds `resource.charging_station` and `resource.evse` compose the EVSE
+device type (`0x050C`, revision 2). The profile is `targets/clusters/evse/`; the
+cluster tables are under `targets/clusters/` (`energyevse`, `energyevsemode`
+and the electrical tables). The device type requires three nested parts under
+the one resource root, each in the multiplicity the data model gives (min 1).
+They need no separately admitted SemReg resource.
+
+| Placement | Device type | Mounted clusters and required features |
+| --- | --- | --- |
+| root | EVSE `0x050C` | Descriptor; Energy EVSE `0x0099` with PREF (the cluster itself requires it); Energy EVSE Mode `0x009D` |
+| `power_source` | Power Source `0x0011` | Power Source |
+| `device_energy_management` | Device Energy Management `0x050D` | Device Energy Management with PFR and `Forecast` |
+| `electrical_sensor` | Electrical Sensor `0x0510` | Electrical Power Measurement; Electrical Energy Measurement; Power Topology (required by the Electrical Sensor device type itself) |
+
+Identify and Temperature Measurement are optional and not mounted. The EVSE
+commands `Disable` and `EnableCharging` are mandatory in the data model; the
+target maps no operation for them, so the profile carries no command handler,
+inverse encoder or writable row.
+
+**Mandatory elements.** The 1.6.1 target maps one attribute for these kinds,
+`evse.ac.current` to Electrical Power Measurement `ActiveCurrent` (optional in
+the data model), fed from SemReg through the `ampere_to_milliampere` encoder.
+The encoding is exact: amperes are multiplied by 1000, an input that does not
+give an integral milliampere value is reported and not rounded, and the target's
+signed range is enforced. The mapped row sits on the `electrical_sensor` part.
+It does not discharge a mandatory element.
+
+Every dynamic mandatory element is `missing` with reason `matter.unmapped.v1`:
+Energy EVSE `State`, `SupplyState`, `FaultState`, `ChargingEnabledUntil`,
+`CircuitCapacity`, `MinimumChargeCurrent`, `MaximumChargeCurrent`,
+`NextChargeStartTime`, `NextChargeTargetTime`, `NextChargeRequiredEnergy`,
+`NextChargeTargetSoC`, `SessionId`, `SessionDuration`, `SessionEnergyCharged`;
+Energy EVSE Mode `SupportedModes`, `CurrentMode`; Power Source `Status`,
+`Order`, `Description`, `EndpointList`; Device Energy Management `EsaType`,
+`EsaCanGenerate`, `EsaState`, `AbsMinPower`, `AbsMaxPower`, `Forecast`;
+Electrical Power Measurement `PowerMode`, `NumberOfMeasurementTypes`, `Accuracy`
+with each of its fields, `ActivePower`; Electrical Energy Measurement `Accuracy`
+with each of its fields. Declared, fixed by the data model or the profile: the
+Descriptor values of the root and of every part, every `ClusterRevision`, Energy
+EVSE `FeatureMap` (PREF) and Energy EVSE Mode `FeatureMap` (none).
+
+Missing `FeatureMap` values, because a choice is left open: Power Source (one of
+WIRED and BAT), Device Energy Management (PFR is required, PA is described
+elsewhere in the data model), Electrical Power Measurement (at least one of DIRC
+and ALTC), Electrical Energy Measurement (at least one of CUME and PERE) and
+Power Topology (exactly one of NODE, TREE and SET).
+
+A charging station with a missing mandatory row gets no endpoint and the
+projection report names the row. Declared values do not admit a resource that
+has no admitted live element.
+
+**Folds and loss.** Connectors fold into the EVSE endpoint (`connector`, source
+`evse.dimension.connector`): the connector qualifier is not retained as an
+endpoint identity. Phases fold into the measurement entries of the Electrical
+Sensor part (`phase`, source `evse.dimension.phase`). Both are declared losses
+named in the projection report; the folded values stay in SemReg, MCP and
+GraphQL.
+
+**Unknown in the target.** Every other `evse.*` element, capability and
+operation row is `unknown` (`matter.unmapped.v1`): status, limit and session
+elements, and `evse.operation.set_allocated_current`. The charging-station
+profile has no entry in the accepted composition file yet. Whether `PA`, and
+therefore the Device Energy Management Mode cluster that depends on
+`ControllableEsa`, applies to a charging station is not established by the
+target or the data model.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.
+
 [L]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/sdk/matter-sdk.lock.json
 [B]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/SDK_BASELINE.md
 [P]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/runtime/production_readiness.py
