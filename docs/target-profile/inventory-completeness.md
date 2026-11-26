@@ -263,6 +263,54 @@ semantics, inventory review, runtime and physical acceptance; no complete retain
 is supplied here. These counts and cross-links
 do not lower the checkpoint threshold above or release either parent.
 
+## Bridge profile and named losses
+
+The bridge itself composes as the Aggregator device type (`0x000E`, revision 2);
+each composed resource is one Bridged Node part (`0x0013`, revision 3) under it.
+The profile is `targets/clusters/aggregator/`. The SDK assembler supplies the
+Aggregator endpoint, its Descriptor and the Bridged Device Basic Information of
+every part, so the profile mounts no cluster of its own. The one declared value
+is the Descriptor `DeviceTypeList`; the parts list is assigned by the node from
+the composed resources and nothing is declared for it. Actions, Identify,
+Commissioner Control (conditional on a node-level condition) and, under a
+Bridged Node, Power Source Configuration, Power Source, Administrator
+Commissioning and Ecosystem Information are not mounted.
+
+**Named losses.** The target lists every service kind as `unsupported`
+(`matter.service_not_requested_item.v1`) with an identity loss: the subject has
+no allocated endpoint in this target and no endpoint correspondence is
+inferred. Of those, eleven service kinds are composed by a profile
+(`pv.service.inverter`, `pv.service.system`, `storage.service.battery`,
+`evse.service.evse`, `infrastructure.service.meter`,
+`infrastructure.service.grid_connection`, `infrastructure.service.circuit`,
+`thermal.service.zone`, `thermal.service.dhw`, `thermal.service.heat_generator`,
+`thermal.service.pump`) and five are folded into a parent endpoint
+(`evse.service.connector`, `evse.service.phase`, `pv.service.input`,
+`pv.service.phase`, `infrastructure.service.phase`). The other 36 are named
+identity losses in `NoCounterpart()`: `energy.service.subject`,
+`energy.service.tariff`, `equipment.service.resource`, `equipment.service.unit`,
+`evse.service.meter`, `evse.service.session`, `evse.service.vehicle`,
+`infrastructure.service.feeder`, `infrastructure.service.line_pair`,
+`infrastructure.service.load`, `infrastructure.service.site`,
+`pv.service.array`, `pv.service.string`, `storage.service.cell`,
+`storage.service.interface`, `storage.service.module`, `storage.service.pack`,
+`storage.service.string`, `storage.service.system`, and the thermal services
+`air_filter`, `circuit`, `compressor`, `detector`, `fan`, `function`,
+`refrigerant_circuit`, `room`, `sensor`, `solar_circuit`, `solar_collector`,
+`system`, `terminal_unit`, `thermal_store`, `valve`, `ventilation` and
+`water_tank`. A named loss states that the target allocates no endpoint for the
+kind; it does not state that Matter has no device type for it, which stays
+Unknown. The values stay in SemReg, MCP and GraphQL.
+
+**Unknown / open.** The accepted composition file still holds the pilot entry
+only, and no profile package is loaded by it yet. No device type other than the
+pilot composes a positive endpoint, because the target maps one attribute
+(`evse.ac.current`) and no operation; the node cannot convert list, struct,
+enumeration or string values, which the Electrical Sensor and Power Source
+mandatory attributes need. The managed full-profile test shows the shipped
+Solar Power profile withheld with its missing rows named; its positive stays
+pending. No hardware run is recorded.
+
 ## Runtime and lifecycle remain unchanged
 
 The current evaluator denies allocation before trusting caller metadata because

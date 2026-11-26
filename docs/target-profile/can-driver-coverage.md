@@ -206,6 +206,16 @@ values remain intact and distinct from freshness/qualification; no eBUS MCP or
 GraphQL behavior changes. Full committed-change review/CI, go-fabric build
 qualification and physical acceptance remain unverified.
 
+## Bridge profile and named losses
+
+The bridge composes as the Aggregator device type (`0x000E`) with one Bridged
+Node part (`0x0013`) per composed resource; see the
+[bridge profile section](inventory-completeness.md#bridge-profile-and-named-losses).
+Source groups of this page whose service kinds have no profile, fold or
+mapped row are named identity losses there; the target allocates no endpoint for
+them and their values stay in SemReg, MCP and GraphQL. Whether Matter has a
+device type for such a group stays Unknown.
+
 [issue]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/8
 [I]: inventory-completeness.md
 [L]: ../../sdk/matter-sdk.lock.json
