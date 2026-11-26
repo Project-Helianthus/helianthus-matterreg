@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "accepted_runtime_composition_profile_sha256": "27b33c0f8f869f8eef02187fae01461f4ddfa4bc1c6152b5f0bc8a2bdc1ecccf",
+  "accepted_runtime_composition_profile_sha256": "19b2de3a6dd174de2c76c52fe1e0e03844d5189c18b191c2ad65bae249b223a7",
   "sdk": {
     "provider": "go-fabric",
     "module": "thingfabric.dev/go-fabric",

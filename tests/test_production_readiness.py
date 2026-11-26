@@ -33,6 +33,14 @@ def load_lock(mapping: dict | None = SYNTHETIC_MAPPING) -> dict:
 
 
 def accepted_composition(lock: dict) -> dict:
+    return {"schema_version": 1, "profiles": [accepted_profile(lock)]}
+
+
+def entry(composition: dict) -> dict:
+    return composition["profiles"][0]
+
+
+def accepted_profile(lock: dict) -> dict:
     return {
         "schema_version": 1,
         "status": "accepted",
@@ -83,14 +91,16 @@ class ProductionReadinessTest(unittest.TestCase):
         self.assertEqual(decision, production_readiness.Decision(True, ()))
 
     def test_complete_self_asserted_evidence_cannot_enable_the_gate(self) -> None:
-        decision = evaluate(self.lock, self.composition, self.build)
+        mismatched = copy.deepcopy(self.lock)
+        mismatched["accepted_runtime_composition_profile_sha256"] = hashlib.sha256(b"other synthetic profile").hexdigest()
+        decision = evaluate(mismatched, self.composition, self.build)
         self.assertFalse(decision.permitted)
         self.assertIn("runtime-composition profile differs from the reviewed pinned profile", decision.reasons)
         unpinned = copy.deepcopy(self.lock)
         unpinned["accepted_runtime_composition_profile_sha256"] = None
-        denied = evaluate(unpinned, self.composition, self.build)
-        self.assertFalse(denied.permitted)
-        self.assertIn("no reviewed accepted runtime-composition profile is pinned", denied.reasons)
+        allowed = evaluate(unpinned, self.composition, self.build)
+        self.assertTrue(allowed.permitted)
+        self.assertEqual(allowed.reasons, ())
 
     def test_unset_mapping_never_permits_even_with_a_matching_profile_digest(self) -> None:
         lock = load_lock(mapping=None)
@@ -123,9 +133,20 @@ class ProductionReadinessTest(unittest.TestCase):
 
     def test_composition_for_another_go_fabric_release_gives_a_reason(self) -> None:
         composition = copy.deepcopy(self.composition)
-        composition["release_tag"] = "v0.0.0"
+        entry(composition)["release_tag"] = "v0.0.0"
         self.assertFalse(evaluate(pinned(self.lock, composition), composition, self.build).permitted)
         self.assertTrue(any("different go-fabric release" in reason for reason in validate_composition(self.lock, composition)))
+
+    def test_composition_file_without_entries_or_with_other_shape_is_denied(self) -> None:
+        for name, composition in (
+            ("no entries", {"schema_version": 1, "profiles": []}),
+            ("extra key", {**copy.deepcopy(self.composition), "extra": 1}),
+            ("schema", {**copy.deepcopy(self.composition), "schema_version": 2}),
+            ("bare entry", accepted_profile(self.lock)),
+        ):
+            with self.subTest(case=name):
+                self.assertTrue(validate_composition(self.lock, composition))
+                self.assertFalse(evaluate(pinned(self.lock, composition), composition, self.build).permitted)
 
     def test_absent_composition_cannot_enable_the_gate(self) -> None:
         self.assertFalse(evaluate(self.lock, None, self.build).permitted)
@@ -133,19 +154,19 @@ class ProductionReadinessTest(unittest.TestCase):
 
     def test_proposed_composition_cannot_enable_the_gate(self) -> None:
         composition = copy.deepcopy(self.composition)
-        composition["status"] = "proposed"
+        entry(composition)["status"] = "proposed"
         self.assertFalse(evaluate(pinned(self.lock, composition), composition, self.build).permitted)
         self.assertTrue(any("not accepted" in reason for reason in validate_composition(self.lock, composition)))
 
     def test_missing_power_topology_cannot_enable_the_gate(self) -> None:
         composition = copy.deepcopy(self.composition)
-        composition["clusters"] = [item for item in composition["clusters"] if item["id"] != "0x009C"]
+        entry(composition)["clusters"] = [item for item in entry(composition)["clusters"] if item["id"] != "0x009C"]
         self.assertFalse(evaluate(pinned(self.lock, composition), composition, self.build).permitted)
         self.assertIn("mandatory Power Topology composition metadata is absent", validate_composition(self.lock, composition))
 
     def test_empty_accuracy_cannot_enable_the_gate(self) -> None:
         composition = copy.deepcopy(self.composition)
-        composition["electrical_power_measurement"]["accuracy"] = []
+        entry(composition)["electrical_power_measurement"]["accuracy"] = []
         self.assertFalse(evaluate(pinned(self.lock, composition), composition, self.build).permitted)
         self.assertIn("mandatory Accuracy list is empty or malformed", validate_composition(self.lock, composition))
 
@@ -161,6 +182,14 @@ class ProductionReadinessTest(unittest.TestCase):
     def test_module_pin_file_cannot_enable_the_gate(self) -> None:
         disk = committed_lock()
         self.assertFalse(evaluate(disk, self.composition, self.build).permitted)
+        committed = json.loads((ROOT / "targets" / "composition" / "profiles.json").read_text(encoding="utf-8"))
+        self.assertEqual(production_readiness._composition_digest(committed), disk["accepted_runtime_composition_profile_sha256"])
+        pin_reason = "runtime-composition profile differs from the reviewed pinned profile"
+        decision = evaluate(disk, committed, go_fabric_build(disk))
+        self.assertNotIn(pin_reason, decision.reasons)
+        self.assertEqual(validate_composition(disk, committed), tuple(decision.reasons))
+        pilot = json.loads((ROOT / "targets" / "pilot" / "profile.json").read_text(encoding="utf-8"))
+        self.assertEqual(evaluate(disk, pilot, go_fabric_build(disk)).reasons, (pin_reason,))
 
     def test_schema_provider_or_model_drift_withholds_permission(self) -> None:
         drifts = (

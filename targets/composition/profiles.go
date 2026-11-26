@@ -1,12 +1,18 @@
-// Package composition loads the accepted pilot profile for the factory.
+// Package composition loads the accepted composition file for the factory.
 // One source is keyed by resource kind. Callers receive a copy.
 package composition
 
 import (
+	"bytes"
+	_ "embed"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/pilot"
 )
+
+//go:embed profiles.json
+var file []byte
 
 // Origin values match the pilot table.
 const (
@@ -100,14 +106,44 @@ type Source struct {
 	byKind map[string]Profile
 }
 
-// Load reads the embedded accepted pilot profile. It does not open a path and
-// it does not consult another index.
+// Load reads the embedded composition file. It does not open a path and it
+// does not consult another index.
 func Load() (Source, error) {
-	profile, err := pilotProfile()
-	if err != nil {
+	var parsed struct {
+		SchemaVersion int               `json:"schema_version"`
+		Profiles      []json.RawMessage `json:"profiles"`
+	}
+	if err := json.Unmarshal(file, &parsed); err != nil {
+		return Source{}, fmt.Errorf("composition file: %w", err)
+	}
+	if parsed.SchemaVersion != 1 || len(parsed.Profiles) == 0 {
+		return Source{}, fmt.Errorf("composition file has no supported profile entries")
+	}
+	var pilotID struct {
+		ProfileID string `json:"profile_id"`
+	}
+	if err := json.Unmarshal(pilot.Document(), &pilotID); err != nil {
 		return Source{}, err
 	}
-	return sourceFrom([]Profile{profile})
+	profiles := make([]Profile, 0, len(parsed.Profiles))
+	for _, entry := range parsed.Profiles {
+		var identity struct {
+			ProfileID string `json:"profile_id"`
+		}
+		if err := json.Unmarshal(entry, &identity); err != nil {
+			return Source{}, fmt.Errorf("composition entry: %w", err)
+		}
+		if identity.ProfileID != pilotID.ProfileID {
+			return Source{}, fmt.Errorf("composition entry %q has no row table", identity.ProfileID)
+		}
+		profile, err := pilotProfile()
+		if err != nil {
+			return Source{}, err
+		}
+		profile.Document = bytes.Clone(entry)
+		profiles = append(profiles, profile)
+	}
+	return sourceFrom(profiles)
 }
 
 // Lookup returns a copy of the profile for kind.

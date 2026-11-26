@@ -70,6 +70,10 @@ def load_lock(mapping: dict | None = SYNTHETIC_MAPPING) -> dict:
 
 
 def synthetic_composition(lock: dict, profile_id: str = "synthetic-electrical-sensor-profile-a") -> dict:
+    return {"schema_version": 1, "profiles": [synthetic_profile(lock, profile_id)]}
+
+
+def synthetic_profile(lock: dict, profile_id: str) -> dict:
     return {
         "schema_version": 1,
         "status": "accepted",
@@ -105,7 +109,7 @@ def synthetic_build(lock: dict) -> dict:
 @contextmanager
 def admitted(composition: dict) -> Iterator[dict]:
     """Yield a lock whose in-memory reviewed pin matches the synthetic profile."""
-    lock = load_lock(composition["mapping"])
+    lock = load_lock(composition["profiles"][0]["mapping"])
     lock[PIN] = production_readiness._composition_digest(composition)
     yield lock
 
@@ -236,7 +240,7 @@ class EndpointSelectionTest(unittest.TestCase):
         self.assertNotIn(LEDGER_KEY, self.store.data)
         self.assertNotIn(LEDGER_KEY, self.store.writes)
         disk = json.loads(LOCK.read_text(encoding="utf-8"))
-        profile = json.loads((ROOT / "targets" / "pilot" / "profile.json").read_text(encoding="utf-8"))
+        profile = json.loads((ROOT / "targets" / "composition" / "profiles.json").read_text(encoding="utf-8"))
         self.assertEqual(disk[PIN], production_readiness._composition_digest(profile))
         decision = production_readiness.evaluate(disk, self.composition, self.build)
         self.assertFalse(decision.permitted)
