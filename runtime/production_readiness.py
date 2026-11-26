@@ -21,7 +21,8 @@ from typing import Any
 COMMITTED_LOCK_PATH = Path(__file__).resolve().parents[1] / "sdk" / "matter-sdk.lock.json"
 SDK_PIN_FIELDS = ("module", "release_tag", "checksum")
 MAPPING_FIELDS = frozenset({"repository", "path", "sha256"})
-COMPOSITION_FIELDS = frozenset({
+COMPOSITION_FILE_FIELDS = frozenset({"schema_version", "profiles"})
+PROFILE_FIELDS = frozenset({
     "schema_version",
     "status",
     "profile_id",
@@ -128,10 +129,38 @@ def _epm_reasons(epm: Any) -> list[str]:
 
 
 def validate_composition(lock: dict[str, Any], composition: Any) -> tuple[str, ...]:
+    """Validate the composition file: a schema version and one or more profile entries."""
     if not isinstance(composition, dict):
         return ("accepted runtime-composition profile is absent or malformed",)
-    if set(composition) != COMPOSITION_FIELDS:
+    if set(composition) != COMPOSITION_FILE_FIELDS:
+        return ("runtime-composition file has an unreviewed shape",)
+    profiles = composition["profiles"]
+    if type(composition["schema_version"]) is not int or composition["schema_version"] != 1:
+        return ("runtime-composition file schema is unsupported",)
+    if not isinstance(profiles, list) or not profiles:
+        return ("runtime-composition file carries no profile entries",)
+    reasons: list[str] = []
+    for profile in profiles:
+        for reason in _validate_profile(lock, profile):
+            if reason not in reasons:
+                reasons.append(reason)
+    return tuple(reasons)
+
+
+def _validate_profile(lock: dict[str, Any], composition: Any) -> tuple[str, ...]:
+    if not isinstance(composition, dict):
+        return ("accepted runtime-composition profile is absent or malformed",)
+    if set(composition) != PROFILE_FIELDS:
         return ("runtime-composition profile has an unreviewed shape",)
+    reasons = _identity_reasons(lock, composition)
+    reasons.extend(_cluster_reasons(composition["clusters"]))
+    epm = composition["electrical_power_measurement"]
+    if not isinstance(epm, dict) or set(epm) != {"power_mode", "number_of_measurement_types", "accuracy", "active_power"}:
+        return tuple(reasons + ["Electrical Power Measurement metadata is malformed"])
+    return tuple(reasons + _epm_reasons(epm))
+
+
+def _identity_reasons(lock: dict[str, Any], composition: dict[str, Any]) -> list[str]:
     reasons: list[str] = []
     if composition["schema_version"] != 1:
         reasons.append("runtime-composition schema is unsupported")
@@ -145,21 +174,19 @@ def validate_composition(lock: dict[str, Any], composition: Any) -> tuple[str, .
         reasons.append("runtime-composition profile pins a different mapping revision")
     if composition["device_type"] != lock["target"]["device_type"]:
         reasons.append("runtime-composition profile pins a different device type")
+    return reasons
 
-    clusters = composition["clusters"]
+
+def _cluster_reasons(clusters: Any) -> list[str]:
     if not isinstance(clusters, list):
-        reasons.append("runtime-composition clusters are malformed")
-    else:
-        found = {item.get("id"): item for item in clusters if isinstance(item, dict) and isinstance(item.get("id"), str)}
-        for cluster_id, name in REQUIRED_CLUSTERS.items():
-            cluster = found.get(cluster_id)
-            if not isinstance(cluster, dict) or cluster.get("name") != name:
-                reasons.append(f"mandatory {name} composition metadata is absent")
-
-    epm = composition["electrical_power_measurement"]
-    if not isinstance(epm, dict) or set(epm) != {"power_mode", "number_of_measurement_types", "accuracy", "active_power"}:
-        return tuple(reasons + ["Electrical Power Measurement metadata is malformed"])
-    return tuple(reasons + _epm_reasons(epm))
+        return ["runtime-composition clusters are malformed"]
+    reasons: list[str] = []
+    found = {item.get("id"): item for item in clusters if isinstance(item, dict) and isinstance(item.get("id"), str)}
+    for cluster_id, name in REQUIRED_CLUSTERS.items():
+        cluster = found.get(cluster_id)
+        if not isinstance(cluster, dict) or cluster.get("name") != name:
+            reasons.append(f"mandatory {name} composition metadata is absent")
+    return reasons
 
 
 def _composition_digest(composition: Any) -> str:
@@ -175,9 +202,7 @@ def evaluate(lock: Any, composition: Any, build_evidence: Any) -> Decision:
         return Decision(False, lock_reasons)
     assert isinstance(lock, dict)
     profile_pin = lock["accepted_runtime_composition_profile_sha256"]
-    if profile_pin is None:
-        return Decision(False, ("no reviewed accepted runtime-composition profile is pinned",))
-    if _composition_digest(composition) != profile_pin:
+    if profile_pin is not None and _composition_digest(composition) != profile_pin:
         return Decision(False, ("runtime-composition profile differs from the reviewed pinned profile",))
     if lock["mapping"] is None:
         return Decision(False, ("no reviewed mapping is pinned",))

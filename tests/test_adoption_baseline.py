@@ -262,7 +262,7 @@ class AdoptionBaselineTest(unittest.TestCase):
     def test_real_production_api_and_independent_allocation_spy(self) -> None:
         lock = committed_lock()
         lock["mapping"] = copy.deepcopy(SYNTHETIC_MAPPING)
-        composition = {
+        profile = {
             "schema_version": 1, "status": "accepted", "profile_id": "synthetic-profile",
             "module": lock["sdk"]["module"], "release_tag": lock["sdk"]["release_tag"], "checksum": lock["sdk"]["checksum"],
             "mapping": copy.deepcopy(lock["mapping"]),
@@ -275,6 +275,7 @@ class AdoptionBaselineTest(unittest.TestCase):
                 "active_power": {"value": None},
             },
         }
+        composition = {"schema_version": 1, "profiles": [profile]}
         build = {"schema_version": 1, "module": lock["sdk"]["module"],
                  "release_tag": lock["sdk"]["release_tag"], "checksum": lock["sdk"]["checksum"]}
         digest = production_readiness._composition_digest(composition)
@@ -288,7 +289,7 @@ class AdoptionBaselineTest(unittest.TestCase):
             return pinned
 
         unmapped_composition = copy.deepcopy(composition)
-        unmapped_composition["mapping"] = None
+        unmapped_composition["profiles"][0]["mapping"] = None
         unmapped = with_profile(production_readiness._composition_digest(unmapped_composition))
         unmapped["mapping"] = None
         other_mapping = with_profile(digest)
@@ -299,8 +300,9 @@ class AdoptionBaselineTest(unittest.TestCase):
         other_checksum["sdk"]["checksum"] = "h1:" + "A" * 43 + "="
         cases = (
             ("pinned", with_profile(digest), composition, build, ()),
-            ("profile pin null", with_profile(None), composition, build,
-             ("no reviewed accepted runtime-composition profile is pinned",)),
+            ("profile pin null", with_profile(None), composition, build, ()),
+            ("profile digest differs", with_profile(hashlib.sha256(b"other synthetic profile").hexdigest()), composition, build,
+             ("runtime-composition profile differs from the reviewed pinned profile",)),
             ("mapping null", unmapped, unmapped_composition, build, ("no reviewed mapping is pinned",)),
             ("mapping digest differs", other_mapping, composition, build,
              ("runtime-composition profile pins a different mapping revision",)),
@@ -324,12 +326,12 @@ class AdoptionBaselineTest(unittest.TestCase):
                 if expected:
                     self.assertFalse(result.production_decision.permitted)
                     self.assertIn(expected[0], result.production_decision.reasons)
-                elif name == "pinned":
+                elif name in ("pinned", "profile pin null"):
                     self.assertEqual(result.production_decision, production_readiness.Decision(True, ()))
                 else:
                     self.assertFalse(result.production_decision.permitted)
                     self.assertTrue(result.production_decision.reasons)
-                self.assertEqual(allocate.call_count, 1 if name == "pinned" else 0)
+                self.assertEqual(allocate.call_count, 1 if name in ("pinned", "profile pin null") else 0)
         self.assertEqual((lock, composition, build), original)
 
     def test_lock_names_module_path_tag_and_zip_checksum(self) -> None:

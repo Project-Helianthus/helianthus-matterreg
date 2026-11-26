@@ -37,8 +37,12 @@ func TestDocumentIsTheAdmissionObject(t *testing.T) {
 	if !reflect.DeepEqual(decoded["mapping"], lock["mapping"]) || !reflect.DeepEqual(decoded["device_type"], lock["target"].(map[string]any)["device_type"]) {
 		t.Fatal("profile pins differ from the lock")
 	}
-	if digest(canonicalJSON(t, raw)) != lock["accepted_runtime_composition_profile_sha256"] {
-		t.Fatal("profile digest differs from the lock pin")
+	pin := lock["accepted_runtime_composition_profile_sha256"]
+	if digest(canonicalJSON(t, raw)) == pin {
+		t.Fatal("the pilot profile alone matches the lock pin")
+	}
+	if digest(canonicalJSON(t, mustRead(t, filepath.Join("..", "composition", "profiles.json")))) != pin {
+		t.Fatal("composition file digest differs from the lock pin")
 	}
 	clusters := decoded["clusters"].([]any)
 	found := map[string]string{}

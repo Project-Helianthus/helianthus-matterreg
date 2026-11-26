@@ -34,12 +34,6 @@
       "measured": 16
     },
     {
-      "path": "runtime/production_readiness.py",
-      "rule": "C901",
-      "symbol": "validate_composition",
-      "measured": 20
-    },
-    {
       "path": "tools/validate_lock.py",
       "rule": "C901",
       "symbol": "_UsesScanner.run",

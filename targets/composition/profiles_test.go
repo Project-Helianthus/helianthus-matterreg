@@ -2,8 +2,10 @@ package composition
 
 import (
 	"bytes"
+	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/targets/pilot"
@@ -25,8 +27,8 @@ func TestLoadAcceptedPilot(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !bytes.Equal(profile.Document, onDisk) || !bytes.Equal(profile.Document, pilot.Document()) {
-		t.Fatal("loaded document is not the embedded pilot")
+	if !bytes.Equal(profile.Document, bytes.TrimSpace(onDisk)) || !bytes.Equal(profile.Document, bytes.TrimSpace(pilot.Document())) {
+		t.Fatal("loaded document is not the pilot entry")
 	}
 	mandatory := 0
 	for _, row := range profile.Attributes {
@@ -90,5 +92,71 @@ func TestProfileStructure(t *testing.T) {
 	}
 	if err := validateProfile(base); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPilotKindResolvesOnceWithComposedIdentity(t *testing.T) {
+	raw, err := os.ReadFile("profiles.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fileDoc struct {
+		SchemaVersion int              `json:"schema_version"`
+		Profiles      []map[string]any `json:"profiles"`
+	}
+	if err := json.Unmarshal(raw, &fileDoc); err != nil {
+		t.Fatal(err)
+	}
+	if fileDoc.SchemaVersion != 1 || len(fileDoc.Profiles) != 1 {
+		t.Fatalf("composition file %d entries", len(fileDoc.Profiles))
+	}
+	lockRaw, err := os.ReadFile(filepath.Join("..", "..", "sdk", "matter-sdk.lock.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var lock struct {
+		SDK     map[string]any `json:"sdk"`
+		Mapping map[string]any `json:"mapping"`
+	}
+	if err := json.Unmarshal(lockRaw, &lock); err != nil {
+		t.Fatal(err)
+	}
+	entry := fileDoc.Profiles[0]
+	for _, field := range []string{"module", "release_tag", "checksum"} {
+		if entry[field] != lock.SDK[field] {
+			t.Fatalf("entry %s %v differs from the lock", field, entry[field])
+		}
+	}
+	if !reflect.DeepEqual(entry["mapping"], lock.Mapping) {
+		t.Fatal("entry mapping differs from the lock")
+	}
+	pilotFile, err := os.ReadFile(filepath.Join("..", "pilot", "profile.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var pilotEntry map[string]any
+	if err := json.Unmarshal(pilotFile, &pilotEntry); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(entry, pilotEntry) {
+		t.Fatal("composition entry differs in content from the pilot profile")
+	}
+	source, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(source.byKind) != 1 {
+		t.Fatalf("loaded %d kinds", len(source.byKind))
+	}
+	profile, ok := source.Lookup(pilot.ResourceKind)
+	if !ok {
+		t.Fatal("pilot kind is not loaded")
+	}
+	var loaded map[string]any
+	if err := json.Unmarshal(profile.Document, &loaded); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(loaded, entry) {
+		t.Fatal("pilot kind does not resolve to the composition entry")
 	}
 }
