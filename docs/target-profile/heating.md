@@ -244,3 +244,87 @@ bindings, accepted profile/build evidence, independent review and applicable
 hosted checks. Physical/live-fabric acceptance is separate and is not performed
 or authorized by this inventory. Document readability and offline link inspection
 are not semantic, runtime, interoperability, certification or hardware validation.
+
+## Domestic hot water and heat generator profiles
+
+Two resource kinds are composed here; the cluster tables are under
+`targets/clusters/` (`waterheatermanagement`, `waterheatermode`, `thermostat`,
+and for the heat generator the Power Source, Device Energy Management and
+electrical tables). The target maps no row for the domestic hot water or heat
+generator services (both `unsupported`), so the device-type choice follows the
+composition table of the parent issue and is a Hypothesis, not a proven target
+correspondence.
+
+**Domestic hot water** (`resource.domestic_hot_water`, profile
+`targets/clusters/waterheater/`) composes as Water Heater `0x050F` (revision 1).
+It mounts on the root: Water Heater Management `0x0094`, Water Heater Mode
+`0x009E` and Thermostat `0x0201` with the feature HEAT, all mandatory. Identify
+is optional. The nested Power Source, Temperature Sensor and Device Energy
+Management device types are optional, and the Electrical Sensor device type has
+conformance described elsewhere in the data model; none is mounted.
+
+Every dynamic mandatory element is `missing` with reason `matter.unmapped.v1`:
+Water Heater Management `HeaterTypes`, `HeatDemand`, `BoostState`; Water Heater
+Mode `SupportedModes`, `CurrentMode`; Thermostat `LocalTemperature`,
+`ControlSequenceOfOperation`, `SystemMode` and `OccupiedHeatingSetpoint` (required
+by HEAT). Declared, fixed by the data model or the device type: the Descriptor
+values, every `ClusterRevision`, the Water Heater Management and Water Heater
+Mode `FeatureMap` (none) and the Thermostat `FeatureMap` (HEAT). The mandatory
+commands `Boost`, `CancelBoost`, `ChangeToMode` and `SetpointRaiseLower` have no
+mapped operation, so no command handler, inverse encoder or writable row exists.
+The DHW set point `thermal.setpoint.dhw_temperature_setpoint` is stated in kelvin
+and the target gives no conversion to the Thermostat `temperature` type, so it
+stays unknown.
+
+**Heat generator** (`resource.heat_generator`, profile
+`targets/clusters/heatpump/`) composes as Heat Pump `0x0309` (revision 1). The
+model gives no boiler device type: the Water Heater Management cluster names a
+boiler heat source, but no device type for a boiler generator exists, and no
+source distinguishes a boiler from a heat pump here. Every heat generator
+therefore composes as Heat Pump; this is a Hypothesis and a gap. The root serves
+no cluster besides Descriptor (Identify and the Thermostat client are optional)
+and the device type requires three parts under the one resource root, each in the
+multiplicity the data model gives. They need no separately admitted SemReg
+resource.
+
+| Placement | Device type | Mounted clusters and required features |
+| --- | --- | --- |
+| `power_source` | Power Source `0x0011` | Power Source with WIRED; Descriptor with TAGLIST |
+| `device_energy_management` | Device Energy Management `0x050D` | Device Energy Management with PA |
+| `electrical_sensor` | Electrical Sensor `0x0510` (min 1) | Electrical Power Measurement with ALTC and `Voltage`, `ActiveCurrent`; Electrical Energy Measurement; Power Topology |
+
+The optional Thermostat, Temperature Sensor and Water Heater device types are not
+mounted.
+
+Every dynamic mandatory element is `missing` with reason `matter.unmapped.v1`:
+Power Source `Status`, `Order`, `Description`, `WiredCurrentType`,
+`EndpointList` and the Descriptor `TagList`; Device Energy Management `EsaType`,
+`EsaCanGenerate`, `EsaState`, `AbsMinPower`, `AbsMaxPower`,
+`PowerAdjustmentCapability`, `OptOutState`; Electrical Power Measurement
+`PowerMode`, `NumberOfMeasurementTypes`, `Accuracy` with each of its fields,
+`Voltage`, `ActiveCurrent`, `ActivePower`; Electrical Energy Measurement
+`Accuracy` with each of its fields. The one attribute the target maps
+(`evse.ac.current` to `ActiveCurrent`) is bound to the charging-station kinds
+through the connector-phase relation; nothing associates it with a heat
+generator, so the heat generator `ActiveCurrent` row is missing and not fed.
+Missing `FeatureMap` values, because a choice is left open: Electrical Energy
+Measurement (at least one of CUME and PERE) and Power Topology (exactly one of
+NODE, TREE and SET). Declared: the Descriptor values of the root and every part
+(with `FeatureMap` TAGLIST on the Power Source part), every `ClusterRevision`,
+and the fixed `FeatureMap` of Power Source (WIRED), Device Energy Management
+(PA) and Electrical Power Measurement (ALTC). The Device Energy Management Mode
+cluster depends on `ControllableEsa`; nothing establishes it for a heat
+generator, so it is not mounted.
+
+**Folds and loss.** The target names no fold for either kind and the profiles
+declare none. Compressor and refrigerant circuit members of a heat generator are
+relations the target does not adopt (`matter.relation_construct_not_adopted.v1`,
+identity loss); their values stay in SemReg, MCP and GraphQL.
+
+**Unknown in the target.** Every other `thermal.*` element, capability, operation, relation and service row of the 1.6.1 target is `unknown` (`matter.unmapped.v1`, or `matter.relation_construct_not_adopted.v1` for relations) or `unsupported` (services, `matter.service_not_requested_item.v1`). The domestic hot water and heat generator profiles have no
+entry in the accepted composition file yet. A resource with a missing mandatory
+row gets no endpoint and the projection report names the row; declared values do
+not admit a resource that has no admitted live element.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.

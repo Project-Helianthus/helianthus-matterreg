@@ -200,6 +200,51 @@ boiler source details, driver inspection and unresolved native semantics still
 block broader claims. No live test, commissioning, deployment or device write
 is performed or authorized by this inventory.
 
+## Pump profile
+
+The resource kind `resource.pump` composes as the Pump device type (`0x0303`,
+revision 4). The target maps no row for the pump service (`thermal.service.pump`
+is `unsupported`), so the device type follows the composition table of the parent
+issue and is a Hypothesis, not a proven target correspondence. The cluster
+tables are under `targets/clusters/` (`identify`, `onoff`,
+`pumpconfigurationandcontrol`); the profile is `targets/clusters/pump/`.
+
+| Placement | Device type | Mounted clusters |
+| --- | --- | --- |
+| root | Pump `0x0303` | Descriptor; Identify `0x0003`; On/Off `0x0006`; Pump Configuration and Control `0x0200` (all mandatory) |
+
+The device type nests no device type. Groups, Level Control, Scenes Management and
+the Temperature, Pressure and Flow Measurement servers and clients, and the
+Occupancy Sensing client, are optional and not mounted.
+
+**Mandatory elements.** The target maps no transformed row for the pump kind, so
+nothing is fed from SemReg. Every dynamic mandatory element is `missing` with
+reason `matter.unmapped.v1`: Identify `IdentifyTime`, `IdentifyType`; On/Off
+`OnOff`; Pump Configuration and Control `MaxPressure`, `MaxSpeed`, `MaxFlow`,
+`EffectiveOperationMode`, `EffectiveControlMode`, `Capacity`, `OperationMode`.
+The Pump Configuration and Control `FeatureMap` is missing because at least one
+of the five control features is required and the device type fixes none.
+Declared: the Descriptor values, every `ClusterRevision`, and the Identify and
+On/Off `FeatureMap` (none). The mandatory commands (Identify `Identify`, On/Off
+`Off`) have no mapped operation, so the profile carries no command handler,
+inverse encoder or writable row; the pump set operations of the thermal pack
+(`set_pump_running`, `set_pump_level`, `set_pump_operation_mode`,
+`set_pump_control_mode`) are `unknown`.
+
+**Folds and loss.** The target names no fold for the pump kind; the profile
+declares none. The pump membership relation is not adopted by the target
+(`matter.relation_construct_not_adopted.v1`, identity loss); its values stay in
+SemReg, MCP and GraphQL.
+
+**Unknown in the target.** All pump state, speed, hours, starts, reset and kick
+rows (P1 to P9) and the direct-boiler candidates stay `unknown`. The pump profile
+has no entry in the accepted composition file yet. A pump with a missing
+mandatory row gets no endpoint and the projection report names the row; declared
+values do not admit a resource that has no admitted live element.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.
+
 [N]: https://github.com/Project-Helianthus/helianthus-docs-ebus/blob/main/protocols/vaillant/ebus-vaillant-b524-register-map.md
 [S]: https://github.com/Project-Helianthus/helianthus-semreg/blob/main/semreg/v1/packs/thermal/definitions.go
 [H]: https://github.com/Project-Helianthus/helianthus-matterreg/blob/main/docs/target-profile/heating.md
