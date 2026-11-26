@@ -5,8 +5,8 @@ go 1.27.4
 require thingfabric.dev/go-fabric v0.25.0
 
 require (
-	github.com/Project-Helianthus/helianthus-semreg v0.0.0-20261117082429-6624e6a810d7
 	filippo.io/nistec v0.0.4 // indirect
+	github.com/Project-Helianthus/helianthus-semreg v0.0.0-20261126092207-6d7258c7785c
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect

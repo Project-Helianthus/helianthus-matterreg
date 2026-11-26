@@ -12,6 +12,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/Project-Helianthus/helianthus-matterreg/projection"
 )
 
 func TestSchemaCorpusMatchesFeedWireValues(t *testing.T) {
@@ -169,6 +171,29 @@ func wireValue(t *testing.T, value any) any {
 		t.Fatal(err)
 	}
 	return decoded
+}
+
+// publishedLedgerBound reads the item bound the published feed schema sets on
+// the ledger arrays.
+func publishedLedgerBound(t *testing.T) int {
+	t.Helper()
+	props := readFeedSchema(t)["$defs"].(map[string]any)["ledger"].(map[string]any)["properties"].(map[string]any)
+	bound := int(props["requested"].(map[string]any)["maxItems"].(float64))
+	if other := int(props["dispositions"].(map[string]any)["maxItems"].(float64)); other != bound {
+		t.Fatalf("published ledger bounds differ: %d and %d", bound, other)
+	}
+	return bound
+}
+
+// TestPublishedLedgerBoundGap fails while the feed's ledger is larger than the
+// bound the published schema sets. Wire values are validated unchanged; the
+// schema file belongs to its owner and is not altered here.
+func TestPublishedLedgerBoundGap(t *testing.T) {
+	bound := publishedLedgerBound(t)
+	requested, _ := projection.Ledger()
+	if len(requested) > bound {
+		t.Fatalf("feed ledger holds %d requested items, published schema allows %d; schema owner must reconcile", len(requested), bound)
+	}
 }
 
 // validateFeedSchema implements exactly the Draft 2020-12 keywords used by
