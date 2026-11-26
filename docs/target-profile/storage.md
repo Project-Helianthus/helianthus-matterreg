@@ -146,3 +146,59 @@ adapter, identity, counter-reset and lifecycle evidence. Optional battery
 reopening still needs a vendor definition version, synthetic/public identity
 and monitoring fixtures, negative overlap evidence and a revised native
 applicability contract. No new native profile or qualification is supplied.
+
+## Battery Storage profile
+
+The kind `resource.battery` composes the Battery Storage device type (`0x0018`,
+revision 2). The profile is `targets/clusters/batterystorage/`; the cluster
+tables are under `targets/clusters/`. The device type requires four nested
+parts under the one resource root, each instance in the multiplicity the data
+model gives (min 2 for each device type). They need no separately admitted
+SemReg resource.
+
+| Part role | Device type | Mounted clusters and required features |
+| --- | --- | --- |
+| `electrical_sensor_1` | Electrical Sensor `0x0510` | Electrical Power Measurement with ALTC, `Voltage`, `ActiveCurrent`; Electrical Energy Measurement with EXPE; Power Topology; Descriptor with TAGLIST |
+| `electrical_sensor_2` | Electrical Sensor `0x0510` | Electrical Power Measurement with DIRC, `Voltage`, `ActiveCurrent`; Electrical Energy Measurement with EXPE; Power Topology; Descriptor with TAGLIST |
+| `power_source_1` | Power Source `0x0011` | Power Source with WIRED; Descriptor with TAGLIST |
+| `power_source_2` | Power Source `0x0011` | Power Source with BAT and the eight attributes the device type requires (`BatVoltage`, `BatPercentRemaining`, `BatTimeRemaining`, `ActiveBatFaults`, `BatCapacity`, `BatTimeToFullCharge`, `BatChargingCurrent`, `ActiveBatChargeFaults`); Descriptor with TAGLIST |
+
+Solar Power and Temperature Sensor are optional and not mounted.
+
+**Hypothesis.** The device type lists BAT as the only required feature of the
+battery Power Source but requires attributes the data model conforms to RECHG
+(`BatTimeToFullCharge`, `BatChargingCurrent`, `ActiveBatChargeFaults`). The
+profile mounts RECHG and therefore also lists `BatChargeState` and
+`BatFunctionalWhileCharging` as mandatory. Power Source `FeatureMap` of that
+part is declared as BAT plus RECHG.
+
+**Mandatory elements.** The 1.6.1 target maps no `storage.*` element, so every
+dynamic mandatory element is `missing` with reason `matter.unmapped.v1`:
+Power Source `Status`, `Order`, `Description`, `EndpointList` (both Power Source
+parts), `WiredCurrentType` (wired part), `BatChargeLevel`,
+`BatReplacementNeeded`, `BatReplaceability`, the eight required attributes,
+`BatChargeState` and `BatFunctionalWhileCharging` (battery part); Electrical
+Power Measurement `PowerMode`, `NumberOfMeasurementTypes`, `Accuracy` and each of
+its fields, `Voltage`, `ActiveCurrent`, `ActivePower`; Electrical Energy
+Measurement `FeatureMap` (one of CUME and PERE is required and nothing fixes
+which) and `Accuracy` with its fields; Power Topology `FeatureMap` (one of NODE,
+TREE and SET); Descriptor `TagList` of every part. Declared, fixed by the data
+model or the profile: Descriptor values, every `ClusterRevision`, Electrical
+Power Measurement `FeatureMap` (ALTC for the first sensor, DIRC for the second)
+and Power Source `FeatureMap`.
+
+A battery with a missing mandatory row gets no endpoint and the projection
+report names the row. Declared values do not admit a resource that has no
+admitted live element.
+
+**Folds and loss.** The target names no fold for this kind. Pack, cell, module,
+string and interface resources of the storage pack have no Battery Storage
+counterpart in the target and are not composed by this profile; their values stay
+in SemReg, MCP and GraphQL.
+
+**Unknown in the target.** Every `storage.*` element, capability and operation
+row is `unknown` (`matter.unmapped.v1`). No table of this profile carries an
+encoder, inverse encoder, writable row or SemReg operation.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.
