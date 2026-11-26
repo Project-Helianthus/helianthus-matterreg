@@ -280,6 +280,16 @@ PASS. Independent review, applicable hosted checks and remaining parent
 acceptance are separate; no commissioning, deployment or upstream action is
 authorized or performed.
 
+## Bridge profile and named losses
+
+The bridge composes as the Aggregator device type (`0x000E`) with one Bridged
+Node part (`0x0013`) per composed resource; see the
+[bridge profile section](inventory-completeness.md#bridge-profile-and-named-losses).
+Source groups of this page whose service kinds have no profile, fold or
+mapped row are named identity losses there; the target allocates no endpoint for
+them and their values stay in SemReg, MCP and GraphQL. Whether Matter has a
+device type for such a group stays Unknown.
+
 [issue]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/43
 [matrix]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/23
 [parent]: https://github.com/Project-Helianthus/helianthus-matterreg/issues/8
