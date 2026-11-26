@@ -36,29 +36,47 @@ func (b *Bridge) Refresh(ctx context.Context) (Report, error) {
 	b.mu.Lock()
 	cursor, have := b.cursor, b.haveCursor
 	b.mu.Unlock()
-	changes, err := input.Resume(ctx, cursor, driver.Filter{})
-	if err != nil {
-		return Report{}, err
-	}
-	if err := changes.Validate(); err != nil {
-		return Report{}, err
-	}
 	var last Report
-	if changes.Resync || !have {
+	capture := func() error {
 		cut, err := input.Capture(ctx, driver.Filter{})
 		if err != nil {
-			return Report{}, err
+			return err
 		}
-		if last, err = b.applyCut(ctx, input, cut); err != nil {
+		last, err = b.applyCut(ctx, input, cut)
+		return err
+	}
+	if !have {
+		// The zero cursor stands for the position of the latest capture, so a
+		// capture comes first.
+		if err := capture(); err != nil {
 			return last, err
 		}
+		cursor = driver.Cursor{}
+	}
+	changes, err := input.Resume(ctx, cursor, driver.Filter{})
+	if err != nil {
+		return last, err
+	}
+	if err := changes.Validate(); err != nil {
+		return last, err
+	}
+	if changes.Resync {
+		if err := capture(); err != nil {
+			return last, err
+		}
+		// The cursor of a resync is the stale one; the zero cursor is the
+		// position of the capture just read.
+		changes.Cursor = driver.Cursor{}
 	} else {
 		for _, commit := range changes.Commits {
+			var err error
 			if last, err = b.applyCut(ctx, input, commit); err != nil {
 				return last, err
 			}
 		}
-		if len(changes.Commits) == 0 {
+		if len(changes.Commits) == 0 && !have {
+			// last already holds the capture's report.
+		} else if len(changes.Commits) == 0 {
 			last = b.Report()
 		}
 	}

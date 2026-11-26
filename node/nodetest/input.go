@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 
 	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
@@ -41,23 +42,43 @@ func Kelvin(coefficient string, exponent10 int32) *semreg.Value {
 	}}
 }
 
+type commit struct {
+	position uint64
+	ref      graph.CutRef
+}
+
 // Input is a synthetic driver.SemanticInput that holds lens results by cut and
-// a queue of changes. It counts every call.
+// the commits made after each position. It follows the host's cursor rules: the
+// zero cursor stands for the position of the session's latest capture, and is
+// an error before any capture; a cursor of another incarnation is answered with
+// a resync that echoes the cursor it was given. It counts every call.
 type Input struct {
-	mu        sync.Mutex
-	lenses    map[semreg.Digest]graph.LensResult
-	current   semreg.Digest
-	position  uint64
-	pending   []driver.Changes
-	Captures  int
-	Resumes   int
-	Retrieved int
+	mu          sync.Mutex
+	lenses      map[semreg.Digest]graph.LensResult
+	current     semreg.Digest
+	position    uint64
+	incarnation string
+	commits     []commit
+	captured    bool
+	capturedAt  uint64
+	Captures    int
+	Resumes     int
+	Retrieved   int
 }
 
 // NewInput returns an input that holds no cut.
-func NewInput() *Input { return &Input{lenses: map[semreg.Digest]graph.LensResult{}} }
+func NewInput() *Input {
+	return &Input{lenses: map[semreg.Digest]graph.LensResult{}, incarnation: "incarnation.synthetic"}
+}
 
-// Publish makes the lens the current cut and queues one commit that carries it.
+// Reincarnate makes every cursor handed out so far stale, as a host restart does.
+func (i *Input) Reincarnate() {
+	i.mu.Lock()
+	defer i.mu.Unlock()
+	i.incarnation += "+"
+}
+
+// Publish makes the lens the current cut and records one commit that carries it.
 func (i *Input) Publish(items []Item, relations []Relation) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
@@ -101,39 +122,55 @@ func (i *Input) Publish(items []Item, relations []Relation) {
 	}
 	i.lenses[id] = result
 	i.current = id
-	i.pending = append(i.pending, driver.Changes{
-		Cursor:  i.cursor(),
-		Commits: []driver.SemanticCut{{Ref: result.Cut}},
-	})
+	i.commits = append(i.commits, commit{position: i.position, ref: result.Cut})
 }
 
 func (i *Input) cursor() driver.Cursor {
-	return driver.Cursor{Incarnation: "incarnation.synthetic", Position: semreg.Uint64(fmt.Sprint(i.position))}
+	return driver.Cursor{Incarnation: i.incarnation, Position: semreg.Uint64(fmt.Sprint(i.position))}
 }
 
-// Capture implements driver.SemanticInput.
+// Capture implements driver.SemanticInput. It records the position the zero
+// cursor then stands for.
 func (i *Input) Capture(context.Context, driver.Filter) (driver.SemanticCut, error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.Captures++
+	i.captured, i.capturedAt = true, i.position
 	return driver.SemanticCut{Ref: i.lenses[i.current].Cut}, nil
 }
 
-// Resume implements driver.SemanticInput. A cursor with no incarnation is
-// answered with a resync; otherwise the queued commits are returned once.
+// Resume implements driver.SemanticInput. The zero cursor stands for the
+// position of the latest capture and is an error when nothing was captured; a
+// cursor of another incarnation is a resync that echoes that cursor; otherwise
+// the commits after the cursor are returned with a cursor at the present.
 func (i *Input) Resume(_ context.Context, cursor driver.Cursor, _ driver.Filter) (driver.Changes, error) {
 	i.mu.Lock()
 	defer i.mu.Unlock()
 	i.Resumes++
-	if cursor.Incarnation == "" {
-		i.pending = nil
-		return driver.Changes{Cursor: i.cursor(), Resync: true}, nil
+	from := i.capturedAt
+	if cursor == (driver.Cursor{}) {
+		if !i.captured {
+			return driver.Changes{}, errors.New("nodetest: no capture to resume from")
+		}
+	} else {
+		if err := cursor.Validate(); err != nil {
+			return driver.Changes{}, err
+		}
+		if cursor.Incarnation != i.incarnation {
+			return driver.Changes{Cursor: cursor, Resync: true}, nil
+		}
+		n, err := strconv.ParseUint(string(cursor.Position), 10, 64)
+		if err != nil {
+			return driver.Changes{}, err
+		}
+		from = n
 	}
 	out := driver.Changes{Cursor: i.cursor()}
-	for _, p := range i.pending {
-		out.Commits = append(out.Commits, p.Commits...)
+	for _, c := range i.commits {
+		if c.position > from {
+			out.Commits = append(out.Commits, driver.SemanticCut{Ref: c.ref})
+		}
 	}
-	i.pending = nil
 	return out, nil
 }
 

@@ -311,3 +311,35 @@ func TestShippedPilotIsWithheldWithItsMissingRowsNamed(t *testing.T) {
 		t.Fatalf("refused %+v\nwant missing %v", report.Refused, want)
 	}
 }
+
+func TestRefreshAfterResyncReadsCommitsAgainAndDoesNotRecapture(t *testing.T) {
+	f := newFixture(t)
+	f.Input = nodetest.NewInput()
+	ctx := bounded(t)
+	f.Input.Publish([]nodetest.Item{zoneItem("zone-a", text("29415"))}, nil)
+	bridge := f.Start(ctx)
+	if _, err := bridge.Refresh(ctx); err != nil {
+		t.Fatal(err)
+	}
+	f.Input.Reincarnate()
+	if _, err := bridge.Refresh(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if f.Input.Captures != 2 {
+		t.Fatalf("captures %d after a resync, want 2", f.Input.Captures)
+	}
+	f.Input.Publish([]nodetest.Item{zoneItem("zone-a", text("29515"))}, nil)
+	if _, err := bridge.Refresh(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := bridge.Refresh(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if f.Input.Captures != 2 {
+		t.Fatalf("captures %d, the bridge recaptured instead of resuming", f.Input.Captures)
+	}
+	_, pair := f.Commission(ctx)
+	if v, null := nodetest.ReadInt(ctx, t, f.Site, pair, 2, nodetest.ClusterTemperature, nodetest.AttrMeasured); null || v != 2200 {
+		t.Fatalf("reads %d null=%v, want 2200", v, null)
+	}
+}
