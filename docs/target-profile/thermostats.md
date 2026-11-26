@@ -226,3 +226,57 @@ hardware/live-fabric smoke PASS is implied. No authorization gate is introduced
 before 0.9; any new authorization roadmap work belongs to 0.11. Independent
 review, applicable committed-head checks and remaining parent acceptance remain
 outstanding.
+
+## Thermostat profile
+
+The resource kind `resource.zone` composes as the Thermostat device type
+(`0x0301`, revision 7). The target maps no row for the zone service
+(`thermal.service.zone` is `unsupported`, its subject has no allocated endpoint
+in the target), so the device type follows the composition table of the parent
+issue and is a Hypothesis, not a proven target correspondence. The cluster
+tables are under `targets/clusters/` (`identify`, `thermostat`); the profile is
+`targets/clusters/zone/`.
+
+| Placement | Device type | Mounted clusters |
+| --- | --- | --- |
+| root | Thermostat `0x0301` | Descriptor; Identify `0x0003` (mandatory); Thermostat `0x0201` (mandatory) |
+
+The device type nests no device type. Groups is conditional on a node-level
+condition that nothing here establishes and is not mounted. Energy Preference,
+Thermostat User Interface Configuration and the Fan Control, Temperature
+Measurement, Relative Humidity Measurement, Occupancy Sensing and Ambient
+Context Sensing clients are optional and not mounted.
+
+**Mandatory elements.** The target maps no transformed row for the zone kind, so
+nothing is fed from SemReg. Every dynamic mandatory element is `missing` with
+reason `matter.unmapped.v1`: Identify `IdentifyTime` and `IdentifyType`;
+Thermostat `LocalTemperature`, `ControlSequenceOfOperation` and `SystemMode`.
+The Thermostat `FeatureMap` is also missing: at least one of HEAT and COOL is
+required unless AUTO is present, and the device type fixes none. Declared, fixed
+by the data model or the profile: the Descriptor values of the root, every
+`ClusterRevision` and the Identify `FeatureMap` (none). The mandatory Thermostat
+command `SetpointRaiseLower` has no mapped operation, so the profile carries no
+command handler, inverse encoder or writable row.
+
+**Set points and kelvin.** The thermal pack states the zone set points
+(`thermal.setpoint.temperature_setpoint`, `occupied_heating`, `occupied_cooling`,
+`unoccupied_heating`, `unoccupied_cooling`) in kelvin, 223.15 to 423.15. The
+Thermostat attributes that carry set points use the data model type
+`temperature`, a signed value in hundredths of a degree Celsius. The target
+states no conversion for any of them (all rows are `unknown`), so no encoder, no
+offset and no rounding rule is written; the kelvin-to-Matter conversion stays
+unknown until the target maps a row.
+
+**Folds and loss.** The target names no fold for the zone kind; the profile
+declares none. Zone, circuit and room associations are relations the target does
+not adopt (`matter.relation_construct_not_adopted.v1`, identity loss); their
+values stay in SemReg, MCP and GraphQL.
+
+**Unknown in the target.** All room, set point, mode, action, capability and
+operation rows listed above are `unknown`. The zone profile has no entry in the
+accepted composition file yet. A zone with a missing mandatory row gets no
+endpoint and the projection report names the row; declared values do not admit a
+resource that has no admitted live element.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.

@@ -223,3 +223,25 @@ Cooling energy counters, ventilation, DHW, boiler behavior and schedules as
 commands remain independently unresolved. The bounded CAN sweep supplies Gree
 structural source coverage, not HVAC property meaning or acceptance of the
 canonical unavailable rows. Full driver coverage and target closure remain open.
+
+## Heat Pump profile boundary
+
+The air-conditioning source families on this page are not composed as a Room Air
+Conditioner. The only air-conditioning-adjacent device type composed by this
+repository is Heat Pump `0x0309`, for the `resource.heat_generator` kind; its
+required parts, mandatory elements and gaps are in [heating.md](heating.md). The
+target maps no row for the compressor, refrigerant circuit, fan, terminal unit or
+ventilation services (all `unsupported`) and its relations to the generator are
+not adopted (`matter.relation_construct_not_adopted.v1`, identity loss), so none
+of them has a Matter element here and no fold is declared; their values stay in
+SemReg, MCP and GraphQL.
+
+Thermostat features HEAT and COOL, the Thermostat set points (hundredths of a
+degree Celsius in the data model against kelvin in the thermal pack) and the
+Thermostat commands are `unknown` in the target for the cooling and mode rows of
+this page. [thermostats.md](thermostats.md) records the zone profile and the
+set-point conversion gap. No cooling capability, mode loss or command closure
+follows from either profile.
+
+**Level.** Source-side declarations from the pinned data model and the target;
+no hardware run is recorded.
