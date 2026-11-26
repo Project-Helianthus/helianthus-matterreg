@@ -53,6 +53,8 @@ type Fixture struct {
 	Launcher *SiteLauncher
 	Dir      string
 	Bridge   *bridgenode.Bridge
+	// Input, when set, is the SemanticInput of the next bridge Start builds.
+	Input *Input
 }
 
 // NewFixture builds a site and a store directory.
@@ -65,7 +67,7 @@ func NewFixture(t testing.TB) *Fixture {
 // Start builds and starts a bridge on the directory.
 func (f *Fixture) Start(ctx context.Context) *bridgenode.Bridge {
 	f.T.Helper()
-	bridge, err := bridgenode.NewWith(Config(f.Dir), f.Launcher)
+	bridge, err := bridgenode.NewWith(f.config(), f.Launcher)
 	if err != nil {
 		f.T.Fatal(err)
 	}
@@ -167,4 +169,12 @@ func RootNumbers(b *bridgenode.Bridge, ids ...string) map[string]uint16 {
 		out[id] = all[bridgenode.RootKey(id).String()]
 	}
 	return out
+}
+
+func (f *Fixture) config() bridgenode.Config {
+	cfg := Config(f.Dir)
+	if f.Input != nil {
+		cfg.Input = f.Input
+	}
+	return cfg
 }

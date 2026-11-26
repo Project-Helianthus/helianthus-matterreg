@@ -8,6 +8,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/driver"
 	gfnode "thingfabric.dev/go-fabric/node"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/publication"
@@ -129,6 +130,9 @@ type Bridge struct {
 	node    *gfnode.Node
 	mounted map[string]*entry
 	report  Report
+
+	cursor     driver.Cursor
+	haveCursor bool
 }
 
 // New validates cfg. It starts nothing.
@@ -180,6 +184,7 @@ func (b *Bridge) Start(ctx context.Context) error {
 	}
 	b.running, b.node = running, running.Node()
 	b.mounted = map[string]*entry{}
+	b.cursor, b.haveCursor = driver.Cursor{}, false
 	return nil
 }
 
@@ -192,6 +197,7 @@ func (b *Bridge) Stop(ctx context.Context) error {
 	}
 	running := b.running
 	b.running, b.node, b.mounted = nil, nil, map[string]*entry{}
+	b.cursor, b.haveCursor = driver.Cursor{}, false
 	return running.Stop(ctx)
 }
 

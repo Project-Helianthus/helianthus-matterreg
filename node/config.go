@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/driver"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/graph"
 	gfnode "thingfabric.dev/go-fabric/node"
 
 	"github.com/Project-Helianthus/helianthus-matterreg/publication"
@@ -39,6 +41,11 @@ type Config struct {
 	Commissioning gfnode.Commissioning
 	// BasicInformation is the root node's BasicInformation.
 	BasicInformation gfnode.BasicInformation
+	// Input is the SemanticInput of the Session given to Instance.Start. Refresh
+	// reads it; Apply needs none.
+	Input driver.SemanticInput
+	// Lens is the lens request Refresh retrieves for every cut it reads.
+	Lens graph.LensRequest
 }
 
 // Configuration errors.

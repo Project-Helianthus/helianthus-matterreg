@@ -50,7 +50,7 @@ func descriptorRows(deviceType string, servers ...any) []composition.AttributeRo
 
 func temperatureRows(measured, tolerance string) []composition.AttributeRow {
 	rows := []composition.AttributeRow{
-		{ClusterID: ClusterTemperature, ClusterName: "Temperature Measurement", AttributeID: AttrMeasured, Name: "MeasuredValue", MatterType: "int16", Nullable: true, Mandatory: true, Origin: composition.OriginSemreg, Element: measured, Dimension: "synthetic.dimension"},
+		{ClusterID: ClusterTemperature, ClusterName: "Temperature Measurement", AttributeID: AttrMeasured, Name: "MeasuredValue", MatterType: "int16", Nullable: true, Mandatory: true, Origin: composition.OriginSemreg, Element: measured, Dimension: "synthetic.dimension", Encoder: "kelvin_to_centicelsius"},
 		{ClusterID: ClusterTemperature, ClusterName: "Temperature Measurement", AttributeID: AttrMin, Name: "MinMeasuredValue", MatterType: "int16", Nullable: true, Mandatory: true, Origin: composition.OriginDeclared, Declared: -5000},
 		{ClusterID: ClusterTemperature, ClusterName: "Temperature Measurement", AttributeID: AttrMax, Name: "MaxMeasuredValue", MatterType: "int16", Nullable: true, Mandatory: true, Origin: composition.OriginDeclared, Declared: 15000},
 	}
