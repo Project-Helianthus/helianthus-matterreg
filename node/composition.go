@@ -3,6 +3,8 @@ package node
 import (
 	"fmt"
 
+	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/driver"
 	"thingfabric.dev/go-fabric/cluster/spec"
 	"thingfabric.dev/go-fabric/device"
 	"thingfabric.dev/go-fabric/endpoint"
@@ -32,6 +34,7 @@ type Mount struct {
 	Commands map[Selector][]composition.CommandRow
 	Servers  map[string]map[uint32]spec.AttributeSetter
 	root     *device.Device
+	ports    *CommandPorts
 }
 
 // Spec implements the SDK's node.Endpoint.
@@ -39,8 +42,13 @@ func (m *Mount) Spec() endpoint.Spec { return m.root.Spec() }
 
 // composeEndpoint builds the endpoint for one resource from the classified
 // rows of its profile: the root and, recursively, the typed parts.
-func composeEndpoint(resourceID string, rows *partRows, initial map[Selector]Value, commands map[Selector][]composition.CommandRow) (*Mount, error) {
+// ports are the session's command ports; without them the mounted servers
+// dispatch nothing.
+func composeEndpoint(resourceID string, rows *partRows, initial map[Selector]Value, commands map[Selector][]composition.CommandRow, ports ...*CommandPorts) (*Mount, error) {
 	mount := &Mount{Ref: resourceID, Commands: commands, Servers: map[string]map[uint32]spec.AttributeSetter{}}
+	if len(ports) > 0 {
+		mount.ports = ports[0]
+	}
 	root, err := composePart(resourceID, rows, initial, mount)
 	if err != nil {
 		return nil, err
@@ -69,8 +77,19 @@ func composePart(resourceID string, rows *partRows, initial map[Selector]Value, 
 		return nil, fmt.Errorf("device type 0x%04X: %w", rows.DeviceTypeID, err)
 	}
 	servers := map[uint32]spec.AttributeSetter{}
+	ref := driver.NodeRef{ID: semreg.ResourceID(resourceID)}
+	if mount.ports != nil {
+		ref.Bridge = mount.ports.Bridge
+	}
 	for _, id := range rows.Servers {
-		if setter, ok := built.Server(id).(spec.AttributeSetter); ok {
+		srv := built.Server(id)
+		if srv == nil {
+			continue
+		}
+		if err := mountCommands(ref, srv, rowsOf(mount.Commands, rows.Role, id), mount.ports); err != nil {
+			return nil, fmt.Errorf("cluster 0x%04X: %w", id, err)
+		}
+		if setter, ok := srv.(spec.AttributeSetter); ok {
 			servers[id] = setter
 		}
 	}
