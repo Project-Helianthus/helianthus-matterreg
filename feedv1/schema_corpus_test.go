@@ -170,12 +170,11 @@ func wireValue(t *testing.T, value any) any {
 	if err := json.Unmarshal(raw, &decoded); err != nil {
 		t.Fatal(err)
 	}
-	fitPublishedLedgerBound(decoded, publishedLedgerBound(t))
 	return decoded
 }
 
 // publishedLedgerBound reads the item bound the published feed schema sets on
-// the ledger arrays, unpatched.
+// the ledger arrays.
 func publishedLedgerBound(t *testing.T) int {
 	t.Helper()
 	props := readFeedSchema(t)["$defs"].(map[string]any)["ledger"].(map[string]any)["properties"].(map[string]any)
@@ -186,38 +185,14 @@ func publishedLedgerBound(t *testing.T) int {
 	return bound
 }
 
-// fitPublishedLedgerBound shortens each ledger array in a wire fixture to the
-// published bound. The schema is never altered: the vector set checks wire
-// shapes, and the catalog being larger than the published bound is reported
-// by TestPublishedLedgerBoundGap for the schema's owner.
-func fitPublishedLedgerBound(value any, bound int) {
-	switch v := value.(type) {
-	case map[string]any:
-		if ledger, ok := v["ledger"].(map[string]any); ok {
-			for _, key := range []string{"requested", "dispositions"} {
-				if items, ok := ledger[key].([]any); ok && len(items) > bound {
-					ledger[key] = items[:bound]
-				}
-			}
-		}
-		for _, child := range v {
-			fitPublishedLedgerBound(child, bound)
-		}
-	case []any:
-		for _, child := range v {
-			fitPublishedLedgerBound(child, bound)
-		}
-	}
-}
-
-// TestPublishedLedgerBoundGap records, without failing, that the feed's
-// current ledger is larger than the bound the published schema sets. The
-// published schema needs its owner's change; this test does not override it.
+// TestPublishedLedgerBoundGap fails while the feed's ledger is larger than the
+// bound the published schema sets. Wire values are validated unchanged; the
+// schema file belongs to its owner and is not altered here.
 func TestPublishedLedgerBoundGap(t *testing.T) {
 	bound := publishedLedgerBound(t)
 	requested, _ := projection.Ledger()
 	if len(requested) > bound {
-		t.Logf("GAP: feed ledger holds %d requested items, published schema allows %d; schema owner to reconcile", len(requested), bound)
+		t.Fatalf("feed ledger holds %d requested items, published schema allows %d; schema owner must reconcile", len(requested), bound)
 	}
 }
 
