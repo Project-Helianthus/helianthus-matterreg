@@ -10,6 +10,10 @@ import (
 
 	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
 	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/evse"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/infrastructure"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/pv"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/storage"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/thermal"
 	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/projection"
 )
 
@@ -112,6 +116,17 @@ func TestCanonicalJSONIsDeterministicForEquivalentResult(t *testing.T) {
 	}
 }
 
+// semregCatalogItemCount counts the facts, capabilities and operations the five
+// SemReg pack catalogs declare, which is what the projection must request and
+// dispose of one for one.
+func semregCatalogItemCount() int {
+	total := 0
+	for _, pack := range []semreg.PackMetadata{evse.Metadata(), infrastructure.Metadata(), pv.Metadata(), storage.Metadata(), thermal.Metadata()} {
+		total += len(pack.Fields) + len(pack.Capabilities) + len(pack.Operations)
+	}
+	return total
+}
+
 type matterFixture struct {
 	snapshot   semreg.Snapshot
 	evaluation semreg.EvaluationView
@@ -129,7 +144,7 @@ func TestProjectEVSECurrentEndToEndAndContractPin(t *testing.T) {
 	if len(first.Document.Attributes) != 1 || first.Document.Attributes[0].Element != evseActiveCurrent || first.Document.Attributes[0].Value.Milliampere != "3200" {
 		t.Fatalf("unexpected target document: %#v", first.Document)
 	}
-	if !reflect.DeepEqual(first.Report.Manifest, Manifest()) || len(first.Report.Requested) != 151 || len(first.Report.Dispositions) != 151 {
+	if !reflect.DeepEqual(first.Report.Manifest, Manifest()) || len(first.Report.Requested) != semregCatalogItemCount() || len(first.Report.Dispositions) != semregCatalogItemCount() || semregCatalogItemCount() != 1070 {
 		t.Fatalf("unexpected projection report: %#v", first.Report)
 	}
 	var transformed int

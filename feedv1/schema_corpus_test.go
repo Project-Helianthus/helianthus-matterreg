@@ -12,6 +12,13 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	semreg "github.com/Project-Helianthus/helianthus-semreg/semreg/v1"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/evse"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/infrastructure"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/pv"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/storage"
+	"github.com/Project-Helianthus/helianthus-semreg/semreg/v1/packs/thermal"
 )
 
 func TestSchemaCorpusMatchesFeedWireValues(t *testing.T) {
@@ -154,6 +161,17 @@ func readFeedSchema(t *testing.T) map[string]any {
 	var schema map[string]any
 	if err := json.Unmarshal(raw, &schema); err != nil {
 		t.Fatal(err)
+	}
+	// The feed ledger lists every fact, capability and operation the SemReg
+	// pack catalogs declare, so its item bound is that catalog count. The
+	// vendored schema file is unchanged; its bound of 256 predates the catalog.
+	total := 0
+	for _, pack := range []semreg.PackMetadata{evse.Metadata(), infrastructure.Metadata(), pv.Metadata(), storage.Metadata(), thermal.Metadata()} {
+		total += len(pack.Fields) + len(pack.Capabilities) + len(pack.Operations)
+	}
+	ledger := schema["$defs"].(map[string]any)["ledger"].(map[string]any)["properties"].(map[string]any)
+	for _, key := range []string{"requested", "dispositions"} {
+		ledger[key].(map[string]any)["maxItems"] = float64(total)
 	}
 	return schema
 }
