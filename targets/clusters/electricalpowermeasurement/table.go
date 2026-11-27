@@ -4,6 +4,52 @@ package electricalpowermeasurement
 
 import "github.com/Project-Helianthus/helianthus-matterreg/targets/clusters"
 
+// Percent100thsPerRatio is the number of percent100ths in a ratio of one, and
+// Percent100thsMaximum is the maximum the percent100ths type states.
+const (
+	Percent100thsPerRatio = 10000
+	Percent100thsMaximum  = 10000
+)
+
+// ElectricalEnergyMeasurementClusterID is the cluster whose single Accuracy
+// struct carries the energy measurement type.
+const ElectricalEnergyMeasurementClusterID uint32 = 0x0091
+
+// MeasurementType is one member of MeasurementTypeEnum. Unit is the SemReg
+// unit of the type's measured and range figures, empty where the catalog has no
+// such element; ClusterID is the cluster whose Accuracy attribute carries the
+// type, zero where no Accuracy attribute carries it.
+type MeasurementType struct {
+	Symbol     string
+	ID         uint16
+	Name       string
+	ClusterID  uint32
+	SemregUnit string
+}
+
+// MeasurementTypes returns a copy of the MeasurementTypeEnum rows.
+func MeasurementTypes() []MeasurementType {
+	return []MeasurementType{
+		{"unspecified", 0, "Unspecified", 0x0090, ""},
+		{"voltage", 1, "Voltage", 0x0090, ""},
+		{"active_current", 2, "ActiveCurrent", 0x0090, "unit.ampere"},
+		{"reactive_current", 3, "ReactiveCurrent", 0x0090, ""},
+		{"apparent_current", 4, "ApparentCurrent", 0x0090, ""},
+		{"active_power", 5, "ActivePower", 0x0090, "unit.watt"},
+		{"reactive_power", 6, "ReactivePower", 0x0090, ""},
+		{"apparent_power", 7, "ApparentPower", 0x0090, ""},
+		{"rms_voltage", 8, "RmsVoltage", 0x0090, ""},
+		{"rms_current", 9, "RmsCurrent", 0x0090, ""},
+		{"rms_power", 10, "RmsPower", 0x0090, ""},
+		{"frequency", 11, "Frequency", 0x0090, ""},
+		{"power_factor", 12, "PowerFactor", 0x0090, ""},
+		{"neutral_current", 13, "NeutralCurrent", 0x0090, ""},
+		{"electrical_energy", 14, "ElectricalEnergy", ElectricalEnergyMeasurementClusterID, ""},
+		{"reactive_energy", 15, "ReactiveEnergy", 0, ""},
+		{"apparent_energy", 16, "ApparentEnergy", 0, ""},
+	}
+}
+
 // Table returns a copy of the cluster table.
 func Table() clusters.Table {
 	return clusters.Table{

@@ -41,6 +41,7 @@ type ProfileResult struct {
 	Attributes   []ProjectedAttribute                  `json:"attributes"`
 	Folds        []composition.Fold                    `json:"folds"`
 	Dispositions []semprojection.ProjectionDisposition `json:"dispositions"`
+	Accuracy     *AccuracyResult                       `json:"accuracy,omitempty"`
 }
 
 // ProjectProfile161 projects the loaded profile for kind from the snapshot.
@@ -99,6 +100,19 @@ func projectLoadedProfile(profile composition.Profile, snapshot semreg.Snapshot,
 		}
 	}
 	result.Admitted = len(result.Missing) == 0
+	for _, row := range profile.Attributes {
+		if row.ClusterID != powerMeasurementClusterID || row.AttributeID != accuracyAttributeID {
+			continue
+		}
+		accuracy, err := projectAccuracy(snapshot, evaluation)
+		if err != nil {
+			return ProfileResult{}, err
+		}
+		if !accuracy.Empty() {
+			result.Accuracy = &accuracy
+		}
+		break
+	}
 	return result, nil
 }
 
