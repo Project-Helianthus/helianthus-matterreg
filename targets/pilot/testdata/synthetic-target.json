@@ -1,0 +1,135 @@
+{
+ "synthetic_test_data": "synthetic test data: not a Helianthus target; no production path reads it",
+ "sources": [
+  {
+   "cluster_id": 156,
+   "attribute_id": 65532,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.power_topology.feature_map",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 65532,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.feature_map",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 0,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.power_mode",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 1,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.number_of_measurement_types",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "MeasurementType",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.measurement_type",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "Measured",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.measured",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "MinMeasuredValue",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.min_measured_value",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "MaxMeasuredValue",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.max_measured_value",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "RangeMin",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.range_min",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "RangeMax",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy.range_max",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 8,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.active_power",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  },
+  {
+   "cluster_id": 144,
+   "attribute_id": 2,
+   "field": "AccuracyRanges",
+   "pack_id": "synthetic.pack.test",
+   "pack_version": "1.0.0",
+   "element": "synthetic.epm.accuracy_ranges",
+   "dimension": "",
+   "encoder": "synthetic_identity"
+  }
+ ]
+}

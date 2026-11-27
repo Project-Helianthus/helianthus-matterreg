@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "accepted_runtime_composition_profile_sha256": "19b2de3a6dd174de2c76c52fe1e0e03844d5189c18b191c2ad65bae249b223a7",
+  "accepted_runtime_composition_profile_sha256": "31f24fa8c111bba536361b7651a9575043704e77f888a45e7eaf11d1c3546169",
   "sdk": {
     "provider": "go-fabric",
     "module": "thingfabric.dev/go-fabric",
@@ -14,7 +14,7 @@
   "mapping": {
     "repository": "https://github.com/Project-Helianthus/helianthus-docs-semantic.git",
     "path": "api/v1/targets/matter-1.6.1-v1.json",
-    "sha256": "395f12b0c6c40654c0254f061e7f7079e9c2b6768e4c446eb3690e5251f753dc"
+    "sha256": "c44019134a5e7133dfae7dacd10d413c4aead2f97d19a006c5f19964236900f2"
   },
   "target": {
     "device_type": {
