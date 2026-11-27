@@ -1,0 +1,639 @@
+{
+ "description": "Synthetic vectors. A fact states one accuracy figure for one measurement type; origin is device (a native observation) or certification (declared origin with certification evidence). Expected members absent from the expectation are not stated by any fact.",
+ "vectors": [
+  {
+   "id": "device-only",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_current",
+     "origin": "device",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.measured",
+     "type": "active_current",
+     "origin": "device",
+     "kind": "boolean",
+     "boolean": true
+    },
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "device",
+     "kind": "quantity",
+     "coefficient": "2",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActiveCurrent",
+      "source": "device",
+      "percent_max": 100,
+      "range_min": null,
+      "range_max": null,
+      "measured": true,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     },
+     {
+      "type": "ActivePower",
+      "source": "device",
+      "percent_max": 200,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [],
+    "refusals": []
+   }
+  },
+  {
+   "id": "certificate-only-one-type",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "5",
+     "exponent10": -3,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.range_minimum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "0",
+     "exponent10": 0,
+     "unit": "unit.watt"
+    },
+    {
+     "element": "accuracy.range_maximum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "3",
+     "exponent10": 3,
+     "unit": "unit.watt"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActivePower",
+      "source": "certification",
+      "percent_max": 50,
+      "range_min": "0",
+      "range_max": "3000000",
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [
+     {
+      "label": "ActivePower",
+      "value": "certification"
+     }
+    ],
+    "refusals": []
+   }
+  },
+  {
+   "id": "certificate-states-measured-and-measured-range",
+   "facts": [
+    {
+     "element": "accuracy.measured",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "boolean",
+     "boolean": false
+    },
+    {
+     "element": "accuracy.measured_minimum_active_current",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "25",
+     "exponent10": -1,
+     "unit": "unit.ampere"
+    },
+    {
+     "element": "accuracy.measured_maximum_active_current",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "32",
+     "exponent10": 0,
+     "unit": "unit.ampere"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActiveCurrent",
+      "source": "certification",
+      "percent_max": null,
+      "range_min": null,
+      "range_max": null,
+      "measured": false,
+      "min_measured_value": "2500",
+      "max_measured_value": "32000",
+      "missing": [
+       "RangeMin",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [
+     {
+      "label": "ActiveCurrent",
+      "value": "certification"
+     }
+    ],
+    "refusals": []
+   }
+  },
+  {
+   "id": "mixed",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_current",
+     "origin": "device",
+     "kind": "quantity",
+     "coefficient": "2",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "25",
+     "exponent10": -4,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "electrical_energy",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActiveCurrent",
+      "source": "device",
+      "percent_max": 200,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     },
+     {
+      "type": "ActivePower",
+      "source": "certification",
+      "percent_max": 25,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": {
+     "type": "ElectricalEnergy",
+     "source": "certification",
+     "percent_max": 100,
+     "range_min": null,
+     "range_max": null,
+     "measured": null,
+     "min_measured_value": null,
+     "max_measured_value": null,
+     "missing": [
+      "Measured",
+      "MinMeasuredValue",
+      "MaxMeasuredValue",
+      "RangeMin",
+      "RangeMax"
+     ]
+    },
+    "labels": [
+     {
+      "label": "ActivePower",
+      "value": "certification"
+     },
+     {
+      "label": "ElectricalEnergy",
+      "value": "certification"
+     }
+    ],
+    "refusals": []
+   }
+  },
+  {
+   "id": "device-publishes-the-type-so-certificate-is-not-used",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "device",
+     "kind": "quantity",
+     "coefficient": "3",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "9",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.range_maximum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "7",
+     "exponent10": 0,
+     "unit": "unit.watt"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActivePower",
+      "source": "device",
+      "percent_max": 300,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [],
+    "refusals": []
+   }
+  },
+  {
+   "id": "figure-without-exact-percent100ths-is-refused-others-kept",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "3",
+     "exponent10": -5,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.range_maximum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": 0,
+     "unit": "unit.watt"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActivePower",
+      "source": "certification",
+      "percent_max": null,
+      "range_min": null,
+      "range_max": "1000",
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [
+     {
+      "label": "ActivePower",
+      "value": "certification"
+     }
+    ],
+    "refusals": [
+     {
+      "element": "pv.accuracy.ratio_maximum",
+      "type": "ActivePower"
+     }
+    ]
+   }
+  },
+  {
+   "id": "only-figure-refused-no-entry-no-label",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "3",
+     "exponent10": -5,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [],
+    "energy": null,
+    "labels": [],
+    "refusals": [
+     {
+      "element": "pv.accuracy.ratio_maximum",
+      "type": "ActivePower"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ratio-above-the-attribute-maximum-is-refused",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "11",
+     "exponent10": -1,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [],
+    "energy": null,
+    "labels": [],
+    "refusals": [
+     {
+      "element": "pv.accuracy.ratio_maximum",
+      "type": "ActiveCurrent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "negative-ratio-is-refused",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "-1",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [],
+    "energy": null,
+    "labels": [],
+    "refusals": [
+     {
+      "element": "pv.accuracy.ratio_maximum",
+      "type": "ActiveCurrent"
+     }
+    ]
+   }
+  },
+  {
+   "id": "range-without-exact-milli-value-is-refused",
+   "facts": [
+    {
+     "element": "accuracy.range_maximum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "5",
+     "exponent10": -4,
+     "unit": "unit.watt"
+    },
+    {
+     "element": "accuracy.range_minimum_active_power",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": 0,
+     "unit": "unit.watt"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActivePower",
+      "source": "certification",
+      "percent_max": null,
+      "range_min": "1000",
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [
+     {
+      "label": "ActivePower",
+      "value": "certification"
+     }
+    ],
+    "refusals": [
+     {
+      "element": "pv.accuracy.range_maximum_active_power",
+      "type": "ActivePower"
+     }
+    ]
+   }
+  },
+  {
+   "id": "ratio-at-the-attribute-bounds",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_current",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": 0,
+     "unit": "unit.ratio"
+    },
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "active_power",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "0",
+     "exponent10": 0,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [
+     {
+      "type": "ActiveCurrent",
+      "source": "certification",
+      "percent_max": 10000,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     },
+     {
+      "type": "ActivePower",
+      "source": "certification",
+      "percent_max": 0,
+      "range_min": null,
+      "range_max": null,
+      "measured": null,
+      "min_measured_value": null,
+      "max_measured_value": null,
+      "missing": [
+       "Measured",
+       "MinMeasuredValue",
+       "MaxMeasuredValue",
+       "RangeMin",
+       "RangeMax"
+      ]
+     }
+    ],
+    "energy": null,
+    "labels": [
+     {
+      "label": "ActiveCurrent",
+      "value": "certification"
+     },
+     {
+      "label": "ActivePower",
+      "value": "certification"
+     }
+    ],
+    "refusals": []
+   }
+  },
+  {
+   "id": "energy-type-without-an-accuracy-attribute-is-refused",
+   "facts": [
+    {
+     "element": "accuracy.ratio_maximum",
+     "type": "reactive_energy",
+     "origin": "certification",
+     "kind": "quantity",
+     "coefficient": "1",
+     "exponent10": -2,
+     "unit": "unit.ratio"
+    }
+   ],
+   "expect": {
+    "power": [],
+    "energy": null,
+    "labels": [],
+    "refusals": [
+     {
+      "element": "accuracy",
+      "type": "ReactiveEnergy"
+     }
+    ]
+   }
+  },
+  {
+   "id": "no-accuracy-fact",
+   "facts": [],
+   "expect": {
+    "power": [],
+    "energy": null,
+    "labels": [],
+    "refusals": []
+   }
+  }
+ ]
+}
